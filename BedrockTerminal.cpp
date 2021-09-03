@@ -18,7 +18,7 @@ struct UserData
 	UserData(std::string resource_path_in = "", std::string behavior_path_in = "") : resource_path(resource_path_in), behavior_path(behavior_path_in) {}
 };
 
-static enum CommandList
+enum CommandList
 {
 	eRDIR,
 	eBDIR
@@ -110,9 +110,10 @@ int main(int argc, char** argv)
 		return -1;
 	}
 
+	char* dirArg = NULL;
 	int opt;
-	bool bUseSource;
-	while ((opt = getopt(argc, argv, "h?:s:d")) != EOF)
+	bool bUseSource = true;
+	while ((opt = getopt(argc, argv, "d:s")) != -1)
 	{
 		switch (opt)
 		{
@@ -121,13 +122,12 @@ int main(int argc, char** argv)
 			break;
 		case 'd':
 			bUseSource = false;
-			cout << optarg << endl;
+			dirArg = optarg;
 			break;
 		default:
 			break;
 		}
 	}
-
 
 	read_user_data();
 	init_command_list();
@@ -135,10 +135,10 @@ int main(int argc, char** argv)
 	switch (mapCommandList[argv[argc-1]])
 	{
 	case eRDIR:
-		write_resource_dir(bUseSource, optarg);
+		write_resource_dir(bUseSource, dirArg);
 		break;
 	case eBDIR:
-		write_behavior_dir(bUseSource, optarg);
+		write_behavior_dir(bUseSource, dirArg);
 		break;
 	default:
 		ShowUsage();

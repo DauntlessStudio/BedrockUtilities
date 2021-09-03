@@ -1,3 +1,2 @@
 ﻿  BedrockTerminal.cpp
-C:\Users\caleb\Repos\Desktop\BedrockTerminal\BedrockTerminal.cpp(25,2): warning C4091: 'static ': ignored on left of 'CommandList' when no variable is declared
   BedrockTerminal.vcxproj -> C:\Users\caleb\Repos\Desktop\BedrockTerminal\Debug\BedrockTerminal.exe
