@@ -40,7 +40,7 @@ int main(int argc, char** argv)
 	int opt;
 	bool bUseSource = true;
 
-	while ((opt = getopt(argc, argv, "d:s")) != -1)
+	while ((opt = bed_getopt(argc, argv, "d:s")) != -1)
 	{
 		switch (opt)
 		{
@@ -49,7 +49,7 @@ int main(int argc, char** argv)
 			break;
 		case 'd':
 			bUseSource = false;
-			dirArg = optarg;
+			dirArg = bed_optarg;
 			break;
 		default:
 			break;

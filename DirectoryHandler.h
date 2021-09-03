@@ -87,7 +87,7 @@ int write_resource_dir(bool bUseSource, string arg)
 	if (bUseSource)
 	{
 		char buffer[PATH_MAX];
-		getcwd(buffer, sizeof(buffer) != NULL);
+		getcwd(buffer, sizeof(buffer));
 		path = buffer;
 	}
 	else
@@ -112,7 +112,7 @@ int write_behavior_dir(bool bUseSource, string arg)
 	if (bUseSource)
 	{
 		char buffer[PATH_MAX];
-		getcwd(buffer, sizeof(buffer) != NULL);
+		getcwd(buffer, sizeof(buffer));
 		path = buffer;
 	}
 	else
