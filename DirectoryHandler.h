@@ -86,7 +86,7 @@ int write_resource_dir(bool bUseSource, string arg)
 	std::string path;
 	if (bUseSource)
 	{
-		char buffer[_MAX_PATH];
+		char buffer[PATH_MAX];
 		getcwd(buffer, sizeof(buffer) != NULL);
 		path = buffer;
 	}
@@ -111,7 +111,7 @@ int write_behavior_dir(bool bUseSource, string arg)
 	std::string path;
 	if (bUseSource)
 	{
-		char buffer[_MAX_PATH];
+		char buffer[PATH_MAX];
 		getcwd(buffer, sizeof(buffer) != NULL);
 		path = buffer;
 	}
