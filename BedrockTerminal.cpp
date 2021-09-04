@@ -31,7 +31,7 @@ void init_command_list()
 	mapCommandList["cogr"] = eCOGR;
 }
 
-int write_component_group(string family, string name, bool bUseReset)
+int write_component_group(string family, string name, int spacing = 2)
 {
 	if (!name.empty())
 	{
@@ -54,13 +54,53 @@ int write_component_group(string family, string name, bool bUseReset)
 		getline(cin, input);
 		input = "{" + input + "}";
 		json jo = json::parse(input);
-
-		//Merge input into enity
+		
+		//Process resets
+		json resets;
+		for(auto& el : jo.items())
+		{
+		    std::cout << "Create Reset For: " << el.key() << "? [y/n]:";
+	   	    cin >> input;
+		    if(input != "y" && input != "Y")
+		    {
+		        continue;
+		    }
+		    
+		    json tmp;
+		    for(auto& it : el.value().items())
+		    {
+		        tmp.merge_patch(entity["minecraft:entity"]["components"][it.key()]);
+		    }
+            resets[el.key() + "_reset"] = tmp;
+		}
+		
+		jo.merge_patch(resets);
+		
+		//Merge component_groups
 		entity["minecraft:entity"]["component_groups"].merge_patch(jo);
+		
+		//Create events
+		nlohmann::ordered_json events;
+		for(auto& el : jo.items())
+		{
+		    if(el.key().find("reset") != string::npos) continue;
+		    if(jo.contains(el.key() + "_reset"))
+		    {
+		        events[el.key() + "_reset"]["add"]["component_groups"] = "[" + el.key() + "_reset" + "]";
+		    }
+		    
+		    events[el.key()]["add"]["component_groups"] = "[" + el.key() + "]";
+		    events[el.key() + "_reset"]["remove"]["component_groups"] = "[" + el.key() + "]";
+		}
+		
+		//Merge events
+		entity["minecraft:entity"]["events"].merge_patch(events);
+		
+		cout << "Adding Component Groups:\n\033[32m" + jo.dump(spacing) << "\033[0m\nAdding Events:\n\033[32m" << events.dump(spacing) << "\033[0m" << endl;
 
 		//Write modified entity
 		ofstream o(user_data.behavior_path + "/entities/" + name + ".json");
-		o << setw(2) << entity << endl;
+		o << setw(spacing) << entity << endl;
 		o.close();
 
 		return 0;
@@ -82,9 +122,9 @@ int main(int argc, char** argv)
 	string name;
 	int opt;
 	bool bUseSource = true;
-	bool bUseReset = false;
+	int indent = 2;
 
-	while ((opt = bed_getopt(argc, argv, "d:f:n:sr")) != -1)
+	while ((opt = bed_getopt(argc, argv, "i:d:f:n:s")) != -1)
 	{
 		switch (opt)
 		{
@@ -101,8 +141,8 @@ int main(int argc, char** argv)
 		case 'n':
 			name = bed_optarg;
 			break;
-		case 'r':
-			bUseReset = true;
+			case 'i':
+			indent = atoi(bed_optarg);
 			break;
 		default:
 			break;
@@ -121,7 +161,7 @@ int main(int argc, char** argv)
 		write_behavior_dir(bUseSource, dirArg);
 		break;
 	case eCOGR:
-		write_component_group(family, name, bUseReset);
+		write_component_group(family, name, indent);
 		break;
 	default:
 		ShowUsage("help");
