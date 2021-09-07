@@ -3,6 +3,7 @@
 #include <fstream>
 #include <string>
 #include <limits.h>
+#include <list>
 #define DATAFILE "directory.dat"
 
 using namespace std;
@@ -96,11 +97,13 @@ list<string> get_directory_files(const string path)
 	string tmp_str = "ls " + path;
 	char* command = new char[tmp_str.size()];
 	std::copy(tmp_str.begin(), tmp_str.end(), command);
-	FILE* proc = _popen(command, "r");
+	FILE* proc = popen(command, "r");
 	char buf[1024];
 	while (!feof(proc) && fgets(buf, sizeof(buf), proc))
 	{
-		files.push_back(path + buf);
+	    string val = path + buf;
+	    val.erase(remove(val.begin(), val.end(), '\n'), val.end());
+		files.push_back(val);
 	}
 	return files;
 }

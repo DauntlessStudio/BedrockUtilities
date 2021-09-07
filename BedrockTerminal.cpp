@@ -96,9 +96,14 @@ int process_component_group(string family, string name, int spacing = 2) {
         {
             //Get an ordered_json copy of the entity to preserve json order
             ifstream i(file);
+            if (i.fail()) {
+            cerr << file << "The specified file doesn't exist." << endl;
+            continue;
+        }
 
             nlohmann::ordered_json* entity;
             entity = new nlohmann::ordered_json;
+
             try
             {
                 *entity = entity->parse(i, nullptr, true, true);
