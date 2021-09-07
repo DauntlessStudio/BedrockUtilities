@@ -87,25 +87,20 @@ list<string> get_directory_files(const string path)
 		files.push_back(file.path().string());
 	return files;
 }
+
 #else
 #include <unistd.h>
-#include <dirent.h>
 list<string> get_directory_files(const string path)
 {
-	DIR* dir; struct dirent* diread;
 	list<string> files;
-
-	if ((dir = opendir("/")) != nullptr)
+	string tmp_str = "ls " + path;
+	char* command = new char[tmp_str.size()];
+	std::copy(tmp_str.begin(), tmp_str.end(), command);
+	FILE* proc = _popen(command, "r");
+	char buf[1024];
+	while (!feof(proc) && fgets(buf, sizeof(buf), proc))
 	{
-		while ((diread = readdir(dir)) != nullptr)
-		{
-			files.push_back(diread->d_name);
-		}
-		closedir(dir);
-	}
-	else
-	{
-		perror("opendir");
+		files.push_back(path + buf);
 	}
 	return files;
 }
