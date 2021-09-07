@@ -30,3 +30,15 @@
 *.exe
 *.out
 *.app
+
+# Folders
+.vs/
+Debug
+
+# Other Crap
+*.aps
+*.sln
+*.vcxproj
+*.filters
+*.user
+*.vcxproj
