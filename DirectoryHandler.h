@@ -39,7 +39,7 @@ int write_resource_dir(bool bUseSource, string arg)
 	std::string path;
 	if (bUseSource)
 	{
-		path = std::filesystem::current_path().string();
+		path = std:: filesystem::current_path().string();
 	}
 	else
 	{
@@ -79,8 +79,37 @@ int write_behavior_dir(bool bUseSource, string arg)
 	std::cout << "Behavior Directory: " << path << std::endl;
 	return 1;
 }
+
+list<string> get_directory_files(const string path)
+{
+	list<string> files;
+	for (const auto& file : std::filesystem::recursive_directory_iterator(path))
+		files.push_back(file.path().string());
+	return files;
+}
 #else
 #include <unistd.h>
+#include <dirent.h>
+list<string> get_directory_files(const string path)
+{
+	DIR* dir; struct dirent* diread;
+	list<string> files;
+
+	if ((dir = opendir("/")) != nullptr)
+	{
+		while ((diread = readdir(dir)) != nullptr)
+		{
+			files.push_back(diread->d_name);
+		}
+		closedir(dir);
+	}
+	else
+	{
+		perror("opendir");
+	}
+	return files;
+}
+
 int write_resource_dir(bool bUseSource, string arg)
 {
 	std::string path;
