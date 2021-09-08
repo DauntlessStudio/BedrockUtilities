@@ -120,6 +120,11 @@ int process_component_group(string family, string name, int spacing = 2) {
                 new_files.push_back(file);
             }
         }
+        
+        if(entities.size() <= 0) {
+            cout << "No valid entities found\nAborting..." << endl;
+            return -1;
+        }
 
         cout << "Found " << entities.size() << " entities that contain the family type: " << family << endl;
         json groups = get_component_groups_from_input();
@@ -171,6 +176,11 @@ int process_component_group(string family, string name, int spacing = 2) {
 
         entities.push_back(*entity);
     }
+    
+        if(entities.size() <= 0) {
+            cout << "No valid entities found\nAborting..." << endl;
+            return -1;
+        }
 
     cout << "Found " << entities.size() << " entities" << endl;
     json groups = get_component_groups_from_input();
