@@ -103,7 +103,15 @@ list<string> get_directory_files(const string path)
 	{
 	    string val = path + buf;
 	    val.erase(remove(val.begin(), val.end(), '\n'), val.end());
+	    if(val.find(".json") != string::npos) {
 		files.push_back(val);
+	    }else if (val.find(".") != string::npos){
+	        //cout << "Found Sub" << endl;
+	        list<string> sub_list = get_directory_files(val + "/");
+	        for (const auto& sub_val : sub_list) {
+	            files.push_back(sub_val);
+	        }
+	    }
 	}
 	return files;
 }
