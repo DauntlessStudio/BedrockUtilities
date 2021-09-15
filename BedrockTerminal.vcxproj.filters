@@ -23,5 +23,8 @@
     <ClInclude Include="DirectoryHandler.h">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="JsonSources.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

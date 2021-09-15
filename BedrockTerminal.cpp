@@ -4,6 +4,7 @@
 #include <map>
 #include "getopt.h"
 #include "json.hpp"
+#include "JsonSources.h"
 #include "DirectoryHandler.h"
 
 #ifdef _WIN32
@@ -21,6 +22,7 @@ json get_component_groups_from_input();
 int add_groups_to_entity(const json &groups, nlohmann::ordered_json &entity);
 int write_entity_to_file(const nlohmann::ordered_json &entity, string name, int spacing);
 bool does_entity_contain_family(string family, json entity);
+int create_new_entity(int spacing);
 
 const char* prog_name;
 
@@ -29,7 +31,8 @@ enum CommandList
     eNULL,
     eRDIR,
     eBDIR,
-    eCOGR
+    eCOGR,
+    eNENT
 };
 
 static std::map < string, CommandList > mapCommandList;
@@ -43,6 +46,7 @@ void init_command_list() {
     mapCommandList["rdir"] = eRDIR;
     mapCommandList["bdir"] = eBDIR;
     mapCommandList["cogr"] = eCOGR;
+    mapCommandList["nent"] = eNENT;
 }
 
 int process_component_group(string family, string name, int spacing = 2) {
@@ -326,6 +330,50 @@ int write_entity_to_file(const nlohmann::ordered_json &entity, string name, int 
     return 0;
 }
 
+int create_new_entity(int spacing = 2)
+{
+    string input;
+    cout << "Entity Name:" << endl;
+    getline(cin, input);
+
+    size_t index = input.find(':') + 1;
+    string name = input.substr(index, input.length() - index);
+    string _namespace = input.substr(0, index - 1);
+
+    nlohmann::ordered_json entity;
+    vector family = {_namespace, name};
+
+    char entity_type;
+    cout << "Entity Framework (dummy|passive|hostile): [d/p/h]" << endl;
+    cin >> entity_type;
+    switch (entity_type)
+    {
+    case 'd':
+        entity = JsonSources::bp_dummy_entity;
+        family.push_back("dummy");
+        break;
+    case 'p':
+        entity = JsonSources::bp_passive_entity;
+        family.push_back("mob");
+        break;
+    case 'h':
+        entity = JsonSources::bp_hostile_entity;
+        family.push_back("mob");
+        family.push_back("monster");
+        break;
+    default:
+        cout << "Invalid Input\nAborting..." << endl;
+        return -1;
+    }
+
+    entity["minecraft:entity"]["components"]["minecraft:type_family"]["family"] = family;
+    entity["minecraft:entity"]["description"]["identifier"] = input;
+
+    write_entity_to_file(entity, user_data.behavior_path + "/entities/" + name + ".json", spacing);
+
+    return 0;
+}
+
 int main(int argc, char** argv) {
     prog_name = argv[0];
 
@@ -366,16 +414,19 @@ int main(int argc, char** argv) {
 
     switch (mapCommandList[argv[argc-1]]) {
         case eRDIR:
-        write_resource_dir(bUseSource, dirArg);
+            write_resource_dir(bUseSource, dirArg);
         break;
         case eBDIR:
-        write_behavior_dir(bUseSource, dirArg);
+            write_behavior_dir(bUseSource, dirArg);
         break;
         case eCOGR:
-        process_component_group(family, name, indent);
+            process_component_group(family, name, indent);
+        break;
+        case eNENT:
+            create_new_entity(indent);
         break;
         default:
-        ShowUsage("help");
+            ShowUsage("help");
         break;
     }
 

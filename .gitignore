@@ -42,3 +42,10 @@ Debug
 *.filters
 *.user
 *.vcxproj
+BedrockTerminal.vcxproj
+BedrockTerminal.vcxproj
+Debug/BedrockTerminal.ilk
+Debug/BedrockTerminal.pdb
+Debug/BedrockTerminal.tlog/CL.read.1.tlog
+Debug/vc142.idb
+Debug/vc142.pdb
