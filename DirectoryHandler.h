@@ -106,14 +106,16 @@ int make_directory(const string path)
 
 #else
 #include <unistd.h>
-#include <direct.h>
+#include <sys/types.h>
+#include <sys/stat.h>
 
 int make_directory(const string path)
 {
 	size_t index = path.find_last_of('/');
 	string tmp = path.substr(0, index + 1);
-	const char* p = path.c_str();
-	mkdir(p);
+	const char* p = tmp.c_str();
+	mkdir(p, 0777);
+	return 0;
 }
 
 list<string> get_directory_files(const string path)
