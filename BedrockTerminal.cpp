@@ -6,6 +6,7 @@
 #include "json.hpp"
 #include "JsonSources.h"
 #include "DirectoryHandler.h"
+#include "lodepng.h"
 
 #ifdef _WIN32
 #define LINE_GREEN ""
@@ -323,8 +324,21 @@ int write_entity_to_file(const nlohmann::ordered_json &entity, string name, int 
 {
     //Write modified entity
     cout << "Saving " + name << endl;
+    make_directory(name);
     ofstream o(name);
     o << setw(spacing) << entity << endl;
+    o.close();
+
+    return 0;
+}
+
+int add_txt_entry(string path, string entry)
+{
+    cout << "Adding text entry..." << endl;
+    make_directory(path);
+    ofstream o;
+    o.open(path, ios_base::app);
+    o << endl << entry;
     o.close();
 
     return 0;
@@ -368,8 +382,56 @@ int create_new_entity(int spacing = 2)
 
     entity["minecraft:entity"]["components"]["minecraft:type_family"]["family"] = family;
     entity["minecraft:entity"]["description"]["identifier"] = input;
-
     write_entity_to_file(entity, user_data.behavior_path + "/entities/" + name + ".json", spacing);
+
+    if(entity_type == 'd') return 0;
+
+    char confirm;
+    cout << "Create Resource Pack Files? [y/n]" << endl;
+    cin >> confirm;
+    if (confirm != 'y' && confirm != 'Y')
+    {
+        cout << "Aborting..." << endl;
+        return 0;
+    }
+
+    nlohmann::ordered_json rp_ent = JsonSources::rp_entity;
+    rp_ent["minecraft:client_entity"]["description"]["identifier"] = input;
+    rp_ent["minecraft:client_entity"]["description"]["textures"]["default"] = "textures/entity/" + name + "/default";
+    rp_ent["minecraft:client_entity"]["description"]["geometry"]["default"] = "geometry." + name;
+    write_entity_to_file(rp_ent, user_data.resource_path + "/entity/" + name + ".entity.json", spacing);
+    
+    nlohmann::ordered_json rp_mod = JsonSources::rp_model;
+    nlohmann::ordered_json rp_geo = JsonSources::rp_geo;
+    rp_geo["description"]["identifier"] = "geometry." + name;
+    rp_mod["minecraft:geometry"] = nlohmann::ordered_json::array({ rp_geo });
+    write_entity_to_file(rp_mod, user_data.resource_path + "/models/entity/" + name + ".geo.json", spacing);
+
+    unsigned width = 64, height = 32;
+    std::vector<unsigned char> image;
+    image.resize(width * height * 4);
+    for (unsigned y = 0; y < height; y++)
+        for (unsigned x = 0; x < width; x++)
+        {
+            image[4 * width * y + 4 * x + 0] = 255 * !(x & y);
+            image[4 * width * y + 4 * x + 1] = x ^ y;
+            image[4 * width * y + 4 * x + 2] = x | y;
+            image[4 * width * y + 4 * x + 3] = 255;
+        }
+
+    vector<unsigned char> png;
+    unsigned error = lodepng::encode(png, image, width, height);
+    make_directory(user_data.resource_path + "/textures/entity/" + name + "/");
+    if (!error) lodepng::save_file(png, user_data.resource_path + "/textures/entity/" + name + "/default.png");
+
+    string lang_name = name;
+    lang_name[0] = toupper(name[0]);
+    add_txt_entry(user_data.resource_path + "/texts/en_us.lang", "entity." + input + ".name=" + lang_name);
+
+    if (entity_type != 'd')
+    {
+        add_txt_entry(user_data.resource_path + "/texts/en_us.lang", "item.spawn_egg.entity." + input + ".name=Spawn " + lang_name);
+    }
 
     return 0;
 }
