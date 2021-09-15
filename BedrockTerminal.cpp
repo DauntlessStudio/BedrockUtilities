@@ -1,6 +1,7 @@
 // BedrockTerminal.cpp : This file contains the 'main' function. Program execution begins and ends there.#include <iostream>
 #include <fstream>
 #include <string>
+#include <vector>
 #include <map>
 #include "getopt.h"
 #include "json.hpp"
@@ -355,7 +356,7 @@ int create_new_entity(int spacing = 2)
     string _namespace = input.substr(0, index - 1);
 
     nlohmann::ordered_json entity;
-    vector family = {_namespace, name};
+    vector<string> family = {_namespace, name};
 
     char entity_type;
     cout << "Entity Framework (dummy|passive|hostile): [d/p/h]" << endl;
