@@ -89,7 +89,7 @@ list<string> get_directory_files(const string path)
 	return files;
 }
 
-void make_directory(const string path)
+int make_directory(const string path)
 {
 	size_t index = path.find_last_of('/');
 	string tmp = path.substr(0, index + 1);
@@ -99,11 +99,23 @@ void make_directory(const string path)
 		cout << "Directory Doesn't Exist. Creating..." << endl;
 		filesystem::create_directories(dir);
 	}
-	return;
+	return 0;
 }
+
+
 
 #else
 #include <unistd.h>
+#include <direct.h>
+
+int make_directory(const string path)
+{
+	size_t index = path.find_last_of('/');
+	string tmp = path.substr(0, index + 1);
+	const char* p = path.c_str();
+	mkdir(p);
+}
+
 list<string> get_directory_files(const string path)
 {
 	list<string> files;
