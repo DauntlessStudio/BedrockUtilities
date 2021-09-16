@@ -1,7 +1,7 @@
 CC=g++
 DEPS = json.hpp getopt.h JsonSources.h DirectoryHandler.h lodepng.h
 OBJ = BedrockTerminal.o lodepng.o
-SRC = /data/data/com.termux/files/home
+SRC = /data/data/com.termux/files/usr/bin
 
 %.o: %.c $(DEPS)
 	$(CC) -c -o $@ $< $(CFLAGS)

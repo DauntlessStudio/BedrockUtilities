@@ -128,7 +128,7 @@ string get_path()
 	string path;
 	if (userpath != nullptr)
 	{
-		path = string(userpath) + DATAFILE;
+		path = string(userpath) + "/" + DATAFILE;
 	}
 	return path;
 }
