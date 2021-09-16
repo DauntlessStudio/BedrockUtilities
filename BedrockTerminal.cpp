@@ -22,9 +22,13 @@ using json = nlohmann::json;
 
 json get_component_groups_from_input();
 int add_groups_to_entity(const json &groups, nlohmann::ordered_json &entity);
-int write_entity_to_file(const nlohmann::ordered_json &entity, string name, int spacing);
+int write_json_to_file(const nlohmann::ordered_json &entity, string name, int spacing);
 bool does_entity_contain_family(string family, json entity);
 int create_new_entity(int spacing);
+int create_new_item(int spacing, int stack_size);
+string format_name(string name);
+vector<unsigned char> create_texture(int width, int height);
+void save_texture(vector<unsigned char> png, string path);
 
 const char* prog_name;
 
@@ -34,7 +38,8 @@ enum CommandList
     eRDIR,
     eBDIR,
     eCOGR,
-    eNENT
+    eNENT,
+    eNITM
 };
 
 static std::map < string, CommandList > mapCommandList;
@@ -49,6 +54,7 @@ void init_command_list() {
     mapCommandList["bdir"] = eBDIR;
     mapCommandList["cogr"] = eCOGR;
     mapCommandList["nent"] = eNENT;
+    mapCommandList["nitm"] = eNITM;
 }
 
 int process_component_group(string family, string name, int spacing = 2) {
@@ -83,7 +89,7 @@ int process_component_group(string family, string name, int spacing = 2) {
         cin >> input;
         if (input == "y" || input == "Y")
         {
-            write_entity_to_file(*entity, user_data.behavior_path + "/entities/" + name + ".json", spacing);
+            write_json_to_file(*entity, user_data.behavior_path + "/entities/" + name + ".json", spacing);
         }
         else
         {
@@ -149,7 +155,7 @@ int process_component_group(string family, string name, int spacing = 2) {
             auto file = new_files.begin();
             for (auto& entity : entities)
             {
-                write_entity_to_file(entity, *file, spacing);
+                write_json_to_file(entity, *file, spacing);
                 advance(file, 1);
             }
         }
@@ -205,7 +211,7 @@ int process_component_group(string family, string name, int spacing = 2) {
         auto file = files.begin();
         for (auto& entity : entities)
         {
-            write_entity_to_file(entity, *file, spacing);
+            write_json_to_file(entity, *file, spacing);
             advance(file, 1);
         }
     }
@@ -321,13 +327,13 @@ int add_groups_to_entity(const json &groups, nlohmann::ordered_json &entity) {
     return 0;
 }
 
-int write_entity_to_file(const nlohmann::ordered_json &entity, string name, int spacing)
+int write_json_to_file(const nlohmann::ordered_json &_json, string name, int spacing)
 {
     //Write modified entity
     cout << "Saving " + name << endl;
     make_directory(name);
     ofstream o(name);
-    o << setw(spacing) << entity << endl;
+    o << setw(spacing) << _json << endl;
     o.close();
 
     return 0;
@@ -335,7 +341,7 @@ int write_entity_to_file(const nlohmann::ordered_json &entity, string name, int 
 
 int add_txt_entry(string path, string entry)
 {
-    cout << "Adding text entry..." << endl;
+    cout << "Adding Entry to: " + path << endl;
     make_directory(path);
     ofstream o;
     o.open(path, ios_base::app);
@@ -343,6 +349,31 @@ int add_txt_entry(string path, string entry)
     o.close();
 
     return 0;
+}
+
+vector<unsigned char> create_texture(int width, int height)
+{
+    std::vector<unsigned char> image;
+    image.resize(width * height * 4);
+    for (unsigned y = 0; y < height; y++)
+        for (unsigned x = 0; x < width; x++)
+        {
+            image[4 * width * y + 4 * x + 0] = 255 * !(x & y);
+            image[4 * width * y + 4 * x + 1] = x ^ y;
+            image[4 * width * y + 4 * x + 2] = x | y;
+            image[4 * width * y + 4 * x + 3] = 255;
+        }
+
+    vector<unsigned char> png;
+    unsigned error = lodepng::encode(png, image, width, height);
+    cout << "Creating New Texture..." << endl;
+    return png;
+}
+
+void save_texture(vector<unsigned char> png, string path)
+{
+    cout << "Saving Texture To: " + path << endl;
+    lodepng::save_file(png, path);
 }
 
 int create_new_entity(int spacing = 2)
@@ -383,7 +414,7 @@ int create_new_entity(int spacing = 2)
 
     entity["minecraft:entity"]["components"]["minecraft:type_family"]["family"] = family;
     entity["minecraft:entity"]["description"]["identifier"] = input;
-    write_entity_to_file(entity, user_data.behavior_path + "/entities/" + name + ".json", spacing);
+    write_json_to_file(entity, user_data.behavior_path + "/entities/" + name + ".json", spacing);
 
     if(entity_type == 'd') return 0;
 
@@ -400,41 +431,123 @@ int create_new_entity(int spacing = 2)
     rp_ent["minecraft:client_entity"]["description"]["identifier"] = input;
     rp_ent["minecraft:client_entity"]["description"]["textures"]["default"] = "textures/entity/" + name + "/default";
     rp_ent["minecraft:client_entity"]["description"]["geometry"]["default"] = "geometry." + name;
-    write_entity_to_file(rp_ent, user_data.resource_path + "/entity/" + name + ".entity.json", spacing);
+    write_json_to_file(rp_ent, user_data.resource_path + "/entity/" + name + ".entity.json", spacing);
     
     nlohmann::ordered_json rp_mod = JsonSources::rp_model;
     nlohmann::ordered_json rp_geo = JsonSources::rp_geo;
     rp_geo["description"]["identifier"] = "geometry." + name;
     rp_mod["minecraft:geometry"] = nlohmann::ordered_json::array({ rp_geo });
-    write_entity_to_file(rp_mod, user_data.resource_path + "/models/entity/" + name + ".geo.json", spacing);
+    write_json_to_file(rp_mod, user_data.resource_path + "/models/entity/" + name + ".geo.json", spacing);
 
-    unsigned width = 64, height = 32;
-    std::vector<unsigned char> image;
-    image.resize(width * height * 4);
-    for (unsigned y = 0; y < height; y++)
-        for (unsigned x = 0; x < width; x++)
-        {
-            image[4 * width * y + 4 * x + 0] = 255 * !(x & y);
-            image[4 * width * y + 4 * x + 1] = x ^ y;
-            image[4 * width * y + 4 * x + 2] = x | y;
-            image[4 * width * y + 4 * x + 3] = 255;
-        }
-
-    vector<unsigned char> png;
-    unsigned error = lodepng::encode(png, image, width, height);
     make_directory(user_data.resource_path + "/textures/entity/" + name + "/");
-    if (!error) lodepng::save_file(png, user_data.resource_path + "/textures/entity/" + name + "/default.png");
+    save_texture(create_texture(64, 32), user_data.resource_path + "/textures/entity/" + name + "/default.png");
 
-    string lang_name = name;
-    lang_name[0] = toupper(name[0]);
-    add_txt_entry(user_data.resource_path + "/texts/en_us.lang", "entity." + input + ".name=" + lang_name);
+    add_txt_entry(user_data.resource_path + "/texts/en_us.lang", "entity." + input + ".name=" + format_name(name));
 
     if (entity_type != 'd')
     {
-        add_txt_entry(user_data.resource_path + "/texts/en_us.lang", "item.spawn_egg.entity." + input + ".name=Spawn " + lang_name);
+        add_txt_entry(user_data.resource_path + "/texts/en_us.lang", "item.spawn_egg.entity." + input + ".name=Spawn " + format_name(name));
     }
 
     return 0;
+}
+
+int create_new_item(int spacing = 2, int stack_size = 64)
+{
+    string input;
+    cout << "Item Name:" << endl;
+    getline(cin, input);
+
+    size_t index = input.find(':') + 1;
+    string name = input.substr(index, input.length() - index);
+    string _namespace = input.substr(0, index - 1);
+
+    nlohmann::ordered_json item;
+    
+    char item_type;
+    cout << "Item Type (Default|Effect|Projectile): [d/e/p]" << endl;
+    cin >> item_type;
+    switch (item_type)
+    {
+    case 'd':
+        item = JsonSources::bp_default_item;
+        break;
+    case 'e':
+        item = JsonSources::bp_effect_item;
+        break;
+    case 'p':
+        item = JsonSources::bp_effect_item;
+        break;
+    default:
+        cout << "Invalid Input\nAborting..." << endl;
+        return -1;
+    }
+
+    // Write Item BP
+    item["minecraft:item"]["description"]["identifier"] = input;
+    item["minecraft:item"]["components"]["minecraft:max_stack_size"] = stack_size;
+    write_json_to_file(item, user_data.behavior_path + "/items/" + name + ".json", spacing);
+
+    // Write Item Texture
+    string texture_path;
+    cout << "Texture Path:" << endl;
+    cin.ignore();
+    getline(cin, texture_path);
+    make_directory(user_data.resource_path + "/textures/items/");
+    if (texture_path.empty())
+    {
+        save_texture(create_texture(16, 16), user_data.resource_path + "/textures/items/" + name + ".png");
+    }
+    else
+    {
+        if (!copy_file(texture_path.c_str(), (user_data.resource_path + "/textures/items/" + name + ".png").c_str()))
+        {
+            save_texture(create_texture(16, 16), user_data.resource_path + "/textures/items/" + name + ".png");
+        }
+    }
+
+    // Write Item RP
+    nlohmann::ordered_json item_rp = JsonSources::rp_item;
+    item_rp["minecraft:item"]["description"]["identifier"] = input;
+    item_rp["minecraft:item"]["components"]["minecraft:icon"] = name;
+    write_json_to_file(item_rp, user_data.resource_path + "/items/" + name + ".json", spacing);
+
+    // Modify item_texture.json
+    ifstream i;
+    i.open(user_data.resource_path + "/textures/item_texture.json");
+    nlohmann::ordered_json item_texture;
+    i >> item_texture;
+    i.close();
+    json texture_entry;
+    texture_entry[name]["textures"] = "textures/items/" + name;
+    item_texture["texture_data"].merge_patch(texture_entry);
+    write_json_to_file(item_texture, user_data.resource_path + "/textures/item_texture.json", 2);
+
+    //Modify lang file
+    add_txt_entry(user_data.resource_path + "/texts/en_us.lang", "item." + input + ".name=" + format_name(name));
+    return 0;
+}
+
+string format_name(string name)
+{
+    string lang_name = name;
+    bool caps_next = true;
+    for (size_t i = 0; i < name.length(); i++)
+    {
+        if (caps_next)
+        {
+            lang_name[i] = toupper(lang_name[i]);
+            caps_next = false;
+        }
+
+        if (name[i] == '_')
+        {
+            lang_name[i] = ' ';
+            caps_next = true;
+        }
+    }
+    
+    return lang_name;
 }
 
 int main(int argc, char** argv) {
@@ -451,22 +564,26 @@ int main(int argc, char** argv) {
     int opt;
     bool bUseSource = true;
     int indent = 2;
+    int count = 64;
 
-    while ((opt = bed_getopt(argc, argv, "i:d:f:n:")) != -1) {
+    while ((opt = bed_getopt(argc, argv, "i:d:f:n:c:")) != -1) {
         switch (opt) {
             case 'd':
-            bUseSource = false;
-            dirArg = bed_optarg;
-            break;
+                bUseSource = false;
+                dirArg = bed_optarg;
+                break;
             case 'f':
-            family = bed_optarg;
-            break;
+                family = bed_optarg;
+                break;
             case 'n':
-            name = bed_optarg;
-            break;
+                name = bed_optarg;
+                break;
             case 'i':
-            indent = atoi(bed_optarg);
-            break;
+                indent = atoi(bed_optarg);
+                break;
+            case 'c':
+                count = atoi(bed_optarg);
+                break;
             default:
             break;
         }
@@ -478,19 +595,22 @@ int main(int argc, char** argv) {
     switch (mapCommandList[argv[argc-1]]) {
         case eRDIR:
             write_resource_dir(bUseSource, dirArg);
-        break;
+            break;
         case eBDIR:
             write_behavior_dir(bUseSource, dirArg);
-        break;
+            break;
         case eCOGR:
             process_component_group(family, name, indent);
-        break;
+            break;
         case eNENT:
             create_new_entity(indent);
-        break;
+            break;
+        case eNITM:
+            create_new_item(indent, count);
+            break;
         default:
             ShowUsage("help");
-        break;
+            break;
     }
 
     return 0;

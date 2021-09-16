@@ -33,6 +33,14 @@ void read_user_data()
 	fin.close();
 }
 
+bool copy_file(const char* SRC, const char* DEST)
+{
+	ifstream src(SRC, ios::binary);
+	ofstream dest(DEST, ios::binary);
+	dest << src.rdbuf();
+	return src && dest;
+}
+
 #ifdef _WIN32
 #include <filesystem>
 
