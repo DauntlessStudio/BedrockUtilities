@@ -4,7 +4,7 @@
 #include <string>
 #include <limits.h>
 #include <list>
-#define DATAFILE "directory.dat"
+#define DATAFILE "bedrock_directory.dat"
 
 using namespace std;
 
@@ -17,30 +17,43 @@ struct UserData
 };
 
 UserData user_data;
+string get_path();
 
 void write_user_data()
 {
-	std::ofstream fout(DATAFILE);
+	std::ofstream fout(get_path());
 	fout << user_data.resource_path << ' ' << user_data.behavior_path;
 	fout.close();
 }
 
 void read_user_data()
 {
-	std::ifstream fin(DATAFILE);
+	std::ifstream fin(get_path());
 	fin >> user_data.resource_path >> user_data.behavior_path;
 	fin.close();
 }
 
 #ifdef _WIN32
 #include <filesystem>
+
+string get_path()
+{
+	const char* userpath = getenv("USERPROFILE");
+	string path;
+	if (userpath != nullptr)
+	{
+		path = string(userpath) + "\\AppData\\Local\\BedrockTerminal\\" + DATAFILE;
+	}
+	return path;
+}
+
 int write_resource_dir(bool bUseSource, string arg)
 {
 	cout << "Write Path" << endl;
 	std::string path;
 	if (bUseSource)
 	{
-		path = std:: filesystem::current_path().string();
+		path = std::filesystem::current_path().string();
 	}
 	else
 	{
@@ -109,6 +122,17 @@ int make_directory(const string path)
 #include <sys/types.h>
 #include <sys/stat.h>
 
+string get_path()
+{
+	const char* userpath = getenv("HOME");
+	string path;
+	if (userpath != nullptr)
+	{
+		path = string(userpath) + DATAFILE;
+	}
+	return path;
+}
+
 int make_directory(const string path)
 {
 	size_t index = path.find_last_of('/');
@@ -128,17 +152,21 @@ list<string> get_directory_files(const string path)
 	char buf[1024];
 	while (!feof(proc) && fgets(buf, sizeof(buf), proc))
 	{
-	    string val = path + buf;
-	    val.erase(remove(val.begin(), val.end(), '\n'), val.end());
-	    if(val.find(".json") != string::npos) {
-		files.push_back(val);
-	    }else if (val.find(".") != string::npos){
-	        //cout << "Found Sub" << endl;
-	        list<string> sub_list = get_directory_files(val + "/");
-	        for (const auto& sub_val : sub_list) {
-	            files.push_back(sub_val);
-	        }
-	    }
+		string val = path + buf;
+		val.erase(remove(val.begin(), val.end(), '\n'), val.end());
+		if (val.find(".json") != string::npos)
+		{
+			files.push_back(val);
+		}
+		else if (val.find(".") != string::npos)
+		{
+			//cout << "Found Sub" << endl;
+			list<string> sub_list = get_directory_files(val + "/");
+			for (const auto& sub_val : sub_list)
+			{
+				files.push_back(sub_val);
+			}
+		}
 	}
 	return files;
 }

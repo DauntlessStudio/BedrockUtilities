@@ -34,6 +34,8 @@
 # Folders
 .vs/
 Debug
+%USERPROFILE%
+Release
 
 # Other Crap
 *.aps
