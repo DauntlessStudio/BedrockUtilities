@@ -718,7 +718,10 @@ int create_anim_function(string name)
         cerr << e.what() << endl;
     }
     i.close();
-    add_animation_controller(entity, func_name, query, exit_query, "/function " + func_name);
+
+    string write_func = func_name;
+    replace_all(write_func, "/", ".");
+    add_animation_controller(entity, write_func, query, exit_query, "/function " + func_name);
     write_json_to_file(entity, user_data.behavior_path + "/entities/" + name + ".json", 2);
 
     return 0;
