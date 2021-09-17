@@ -27,6 +27,7 @@ bool does_entity_contain_family(string family, json entity);
 int create_new_entity(int spacing);
 int create_new_item(int spacing, int stack_size);
 int create_batch_funcs(int count, string name);
+int create_anim_function(string name);
 int add_animation_controller(nlohmann::ordered_json& entity, const string anim_name, const string query, const string exit_query, const string entry_line);
 string format_name(string name);
 vector<unsigned char> create_texture(int width, int height);
@@ -44,7 +45,8 @@ enum CommandList
     eNENT,
     eNITM,
     eNBLK,
-    eFUNC
+    eFUNC,
+    eAFUNC
 };
 
 static std::map < string, CommandList > mapCommandList;
@@ -62,6 +64,7 @@ void init_command_list() {
     mapCommandList["nitm"] = eNITM;
     mapCommandList["nblk"] = eNBLK;
     mapCommandList["func"] = eFUNC;
+    mapCommandList["afunc"] = eAFUNC;
 }
 
 int process_component_group(string family, string name, int spacing = 2) {
@@ -503,6 +506,7 @@ int create_new_item(int spacing, int stack_size)
         item = JsonSources::bp_effect_item;
         add_animation_controller(player, name, "query.get_equipped_item_name == '" + name + "' && query.is_using_item", "!query.is_using_item", "/function " + name);
         write_json_to_file(player, user_data.behavior_path + "/entities/player.json", spacing);
+        overwrite_txt_entry(user_data.behavior_path + "/functions/" + name + ".mcfunction", "say " + name);
         break;
     case 'p':
         item = JsonSources::bp_effect_item;
@@ -664,6 +668,62 @@ int create_batch_funcs(int count, string name)
     return 0;
 }
 
+int create_anim_function(string name)
+{
+    if (name.empty()) name = "player";
+
+    string func_name;
+
+    cout << "Function Name:" << endl;
+    getline(cin, func_name);
+
+    string query;
+    string exit_query;
+
+    cout << "Query:" << endl;
+    getline(cin, query);
+
+    cout << "Exit Query:" << endl;
+    getline(cin, exit_query);
+
+    string function;
+    cout << "Function:" << endl;
+
+    while (!cin.eof())
+    {
+        string line;
+        getline(cin, line);
+
+        if (cin.fail())
+            break;
+
+        function += line + '\n';
+    }
+
+    // Remove Trailing \n
+    function.erase(function.end() - 1);
+    
+    overwrite_txt_entry(user_data.behavior_path + "/functions/" + func_name + ".mcfunction", function);
+
+    ifstream i;
+    make_directory(user_data.behavior_path + "/entities/");
+    i.open(user_data.behavior_path + "/entities/" + name + ".json");
+    nlohmann::ordered_json entity;
+    try
+    {
+        i >> entity;
+    }
+    catch (const std::exception& e)
+    {
+        cerr << e.what() << endl;
+    }
+    i.close();
+    add_animation_controller(entity, func_name, query, exit_query, "/function " + func_name);
+    write_json_to_file(entity, user_data.behavior_path + "/entities/" + name + ".json", 2);
+
+    return 0;
+}
+
 int add_animation_controller(nlohmann::ordered_json& entity, const string anim_name, const string query, const string exit_query, const string entry_line)
 {
     make_directory(user_data.behavior_path + "/animation_controllers/");
@@ -675,9 +735,16 @@ int add_animation_controller(nlohmann::ordered_json& entity, const string anim_n
     entity["minecraft:entity"]["description"]["scripts"]["animate"].push_back(anim_name);
 
     ifstream i;
-    i.open(user_data.behavior_path + "/animation_controllers/" + name + ".json");
+    i.open(user_data.behavior_path + "/animation_controllers/" + name + ".animation_controller.json");
     nlohmann::ordered_json animation_controller;
-    i >> animation_controller;
+    try
+    {
+        i >> animation_controller;
+    }
+    catch (const std::exception&)
+    {
+        cout << "Creating Controller..." << endl;
+    }
     i.close();
     if (animation_controller.is_null()) animation_controller = JsonSources::bp_default_anim_controller;
 
@@ -687,16 +754,9 @@ int add_animation_controller(nlohmann::ordered_json& entity, const string anim_n
 
     string val[] = { entry_line };
     controller["states"]["effect"]["on_entry"] = val;
-    if (entry_line.find("function") != string::npos)
-    {
-        make_directory(user_data.behavior_path + "/functions/");
-        ofstream o(user_data.behavior_path + "/functions/" + anim_name + ".mcfunction");
-        o << "say " + anim_name;
-        o.close();
-    }
 
     animation_controller["animation_controllers"]["controller.animation." + name + "." + anim_name] = controller;
-    write_json_to_file(animation_controller, user_data.behavior_path + "/animation_controllers/" + name + ".json", 2);
+    write_json_to_file(animation_controller, user_data.behavior_path + "/animation_controllers/" + name + ".animation_controller.json", 2);
     return 0;
 }
 
@@ -797,6 +857,9 @@ int main(int argc, char** argv) {
             break;
         case eFUNC:
             create_batch_funcs(count, name);
+            break;
+        case eAFUNC:
+            create_anim_function(name);
             break;
         default:
             ShowUsage("help");
