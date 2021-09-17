@@ -26,6 +26,7 @@ int write_json_to_file(const nlohmann::ordered_json &entity, string name, int sp
 bool does_entity_contain_family(string family, json entity);
 int create_new_entity(int spacing);
 int create_new_item(int spacing, int stack_size);
+int add_animation_controller(nlohmann::ordered_json& entity, const string anim_name, const string query, const string exit_query, const string entry_line);
 string format_name(string name);
 vector<unsigned char> create_texture(int width, int height);
 void save_texture(vector<unsigned char> png, string path);
@@ -372,6 +373,7 @@ vector<unsigned char> create_texture(int width, int height)
 
 void save_texture(vector<unsigned char> png, string path)
 {
+    make_directory(path);
     cout << "Saving Texture To: " + path << endl;
     lodepng::save_file(png, path);
 }
@@ -439,7 +441,6 @@ int create_new_entity(int spacing = 2)
     rp_mod["minecraft:geometry"] = nlohmann::ordered_json::array({ rp_geo });
     write_json_to_file(rp_mod, user_data.resource_path + "/models/entity/" + name + ".geo.json", spacing);
 
-    make_directory(user_data.resource_path + "/textures/entity/" + name + "/");
     save_texture(create_texture(64, 32), user_data.resource_path + "/textures/entity/" + name + "/default.png");
 
     add_txt_entry(user_data.resource_path + "/texts/en_us.lang", "entity." + input + ".name=" + format_name(name));
@@ -462,7 +463,15 @@ int create_new_item(int spacing = 2, int stack_size = 64)
     string name = input.substr(index, input.length() - index);
     string _namespace = input.substr(0, index - 1);
 
+    // Get Player
+    ifstream player_stream;
+    player_stream.open(user_data.behavior_path + "/entities/player.json");
+    nlohmann::ordered_json player;
+    player_stream >> player;
+    if (player.is_null()) player = JsonSources::bp_default_player;
+
     nlohmann::ordered_json item;
+    json projectile_group;
     
     char item_type;
     cout << "Item Type (Default|Effect|Projectile): [d/e/p]" << endl;
@@ -474,9 +483,15 @@ int create_new_item(int spacing = 2, int stack_size = 64)
         break;
     case 'e':
         item = JsonSources::bp_effect_item;
+        add_animation_controller(player, name, "query.get_equipped_item_name == '" + name + "' && query.is_using_item", "!query.is_using_item", "/function " + name);
+        write_json_to_file(player, user_data.behavior_path + "/entities/player.json", spacing);
         break;
     case 'p':
         item = JsonSources::bp_effect_item;
+        add_animation_controller(player, name, "query.get_equipped_item_name == '" + name + "' && query.is_using_item", "!query.is_using_item", "/event entity @s " + input);
+        projectile_group[input] = JsonSources::bp_spawn_snowball;
+        add_groups_to_entity(projectile_group, player);
+        write_json_to_file(player, user_data.behavior_path + "/entities/player.json", spacing);
         break;
     default:
         cout << "Invalid Input\nAborting..." << endl;
@@ -485,7 +500,7 @@ int create_new_item(int spacing = 2, int stack_size = 64)
 
     // Write Item BP
     item["minecraft:item"]["description"]["identifier"] = input;
-    item["minecraft:item"]["components"]["minecraft:max_stack_size"] = stack_size;
+    item["minecraft:item"]["components"]["minecraft:max_stack_size"] = stack_size > 64 ? 64 : stack_size;
     write_json_to_file(item, user_data.behavior_path + "/items/" + name + ".json", spacing);
 
     // Write Item Texture
@@ -493,7 +508,6 @@ int create_new_item(int spacing = 2, int stack_size = 64)
     cout << "Texture Path:" << endl;
     cin.ignore();
     getline(cin, texture_path);
-    make_directory(user_data.resource_path + "/textures/items/");
     if (texture_path.empty())
     {
         save_texture(create_texture(16, 16), user_data.resource_path + "/textures/items/" + name + ".png");
@@ -525,6 +539,43 @@ int create_new_item(int spacing = 2, int stack_size = 64)
 
     //Modify lang file
     add_txt_entry(user_data.resource_path + "/texts/en_us.lang", "item." + input + ".name=" + format_name(name));
+    
+    return 0;
+}
+
+int add_animation_controller(nlohmann::ordered_json& entity, const string anim_name, const string query, const string exit_query, const string entry_line)
+{
+    make_directory(user_data.behavior_path + "/animation_controllers/");
+    string full_name = entity["minecraft:entity"]["description"]["identifier"];
+    size_t index = full_name.find(':') + 1;
+    string name = full_name.substr(index, full_name.length() - index);
+
+    entity["minecraft:entity"]["description"]["animations"].merge_patch(json({ {anim_name, "controller.animation." + name + "." + anim_name} }));
+    entity["minecraft:entity"]["description"]["scripts"]["animate"].push_back(anim_name);
+
+    ifstream i;
+    i.open(user_data.behavior_path + "/animation_controllers/" + name + ".json");
+    nlohmann::ordered_json animation_controller;
+    i >> animation_controller;
+    i.close();
+    if (animation_controller.is_null()) animation_controller = JsonSources::bp_default_anim_controller;
+
+    nlohmann::ordered_json controller;
+    controller["states"]["default"]["transitions"] = json::array({ json({{ "effect", query }}) });
+    controller["states"]["effect"]["transitions"] = json::array({ json({{"default", exit_query}}) });
+
+    string val[] = { entry_line };
+    controller["states"]["effect"]["on_entry"] = val;
+    if (entry_line.find("function") != string::npos)
+    {
+        make_directory(user_data.behavior_path + "/functions/");
+        ofstream o(user_data.behavior_path + "/functions/" + anim_name + ".mcfunction");
+        o << "say " + anim_name;
+        o.close();
+    }
+
+    animation_controller["animation_controllers"]["controller.animation." + name + "." + anim_name] = controller;
+    write_json_to_file(animation_controller, user_data.behavior_path + "/animation_controllers/" + name + ".json", 2);
     return 0;
 }
 
