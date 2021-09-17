@@ -26,10 +26,12 @@ int write_json_to_file(const nlohmann::ordered_json &entity, string name, int sp
 bool does_entity_contain_family(string family, json entity);
 int create_new_entity(int spacing);
 int create_new_item(int spacing, int stack_size);
+int create_batch_funcs(int count, string name);
 int add_animation_controller(nlohmann::ordered_json& entity, const string anim_name, const string query, const string exit_query, const string entry_line);
 string format_name(string name);
 vector<unsigned char> create_texture(int width, int height);
 void save_texture(vector<unsigned char> png, string path);
+void replace_all(std::string& str, const std::string& from, const std::string& to);
 
 const char* prog_name;
 
@@ -40,7 +42,9 @@ enum CommandList
     eBDIR,
     eCOGR,
     eNENT,
-    eNITM
+    eNITM,
+    eNBLK,
+    eFUNC
 };
 
 static std::map < string, CommandList > mapCommandList;
@@ -56,6 +60,8 @@ void init_command_list() {
     mapCommandList["cogr"] = eCOGR;
     mapCommandList["nent"] = eNENT;
     mapCommandList["nitm"] = eNITM;
+    mapCommandList["nblk"] = eNBLK;
+    mapCommandList["func"] = eFUNC;
 }
 
 int process_component_group(string family, string name, int spacing = 2) {
@@ -342,11 +348,23 @@ int write_json_to_file(const nlohmann::ordered_json &_json, string name, int spa
 
 int add_txt_entry(string path, string entry)
 {
-    cout << "Adding Entry to: " + path << endl;
     make_directory(path);
+    cout << "Adding Entry to: " + path << endl;
     ofstream o;
     o.open(path, ios_base::app);
     o << endl << entry;
+    o.close();
+
+    return 0;
+}
+
+int overwrite_txt_entry(string path, string entry)
+{
+    make_directory(path);
+    cout << "Writing File At: " + path << endl;
+    ofstream o;
+    o.open(path);
+    o << entry;
     o.close();
 
     return 0;
@@ -356,8 +374,8 @@ vector<unsigned char> create_texture(int width, int height)
 {
     std::vector<unsigned char> image;
     image.resize(width * height * 4);
-    for (unsigned y = 0; y < height; y++)
-        for (unsigned x = 0; x < width; x++)
+    for (int y = 0; y < height; y++)
+        for (int x = 0; x < width; x++)
         {
             image[4 * width * y + 4 * x + 0] = 255 * !(x & y);
             image[4 * width * y + 4 * x + 1] = x ^ y;
@@ -378,7 +396,7 @@ void save_texture(vector<unsigned char> png, string path)
     lodepng::save_file(png, path);
 }
 
-int create_new_entity(int spacing = 2)
+int create_new_entity(int spacing)
 {
     string input;
     cout << "Entity Name:" << endl;
@@ -453,7 +471,7 @@ int create_new_entity(int spacing = 2)
     return 0;
 }
 
-int create_new_item(int spacing = 2, int stack_size = 64)
+int create_new_item(int spacing, int stack_size)
 {
     string input;
     cout << "Item Name:" << endl;
@@ -543,6 +561,109 @@ int create_new_item(int spacing = 2, int stack_size = 64)
     return 0;
 }
 
+int create_new_block(int spacing)
+{
+    string input;
+    cout << "Block Name:" << endl;
+    getline(cin, input);
+
+    size_t index = input.find(':') + 1;
+    string name = input.substr(index, input.length() - index);
+    string _namespace = input.substr(0, index - 1);
+
+    nlohmann::ordered_json block = JsonSources::bp_default_block;
+    block["minecraft:block"]["description"]["identifier"] = input;
+
+    cout << "Light Emmision:" << endl;
+    float emission;
+    cin >> emission;
+    block["minecraft:block"]["components"]["minecraft:block_light_emission"] = emission;
+
+    cout << "Explosion Resistance" << endl;
+    float resistance;
+    cin >> resistance;
+    block["minecraft:block"]["components"]["minecraft:explosion_resistance"] = resistance;
+
+    // Write Block BP
+    write_json_to_file(block, user_data.behavior_path + "/blocks/" + name + ".json", spacing);
+
+    // Write Block Texture
+    string texture_path;
+    cout << "Texture Path:" << endl;
+    cin.ignore();
+    getline(cin, texture_path);
+    if (texture_path.empty())
+    {
+        save_texture(create_texture(16, 16), user_data.resource_path + "/textures/blocks/" + name + ".png");
+    }
+    else
+    {
+        if (!copy_file(texture_path.c_str(), (user_data.resource_path + "/textures/blocks/" + name + ".png").c_str()))
+        {
+            save_texture(create_texture(16, 16), user_data.resource_path + "/textures/blocks/" + name + ".png");
+        }
+    }
+    
+
+    // Modify terrain_texture.json
+    ifstream i;
+    i.open(user_data.resource_path + "/textures/terrain_texture.json");
+    nlohmann::ordered_json terrain_texture;
+    i >> terrain_texture;
+    i.close();
+    if(terrain_texture.is_null()) terrain_texture = JsonSources::rp_terrain_tex;
+    json texture_entry;
+    texture_entry[name]["textures"] = "textures/blocks/" + name;
+    terrain_texture["texture_data"].merge_patch(texture_entry);
+    write_json_to_file(terrain_texture, user_data.resource_path + "/textures/terrain_texture.json", 2);
+
+    // Modify blocks.json
+    i.open(user_data.resource_path + "/blocks.json");
+    nlohmann::ordered_json blocks;
+    i >> blocks;
+    json block_entry;
+    block_entry[input]["sound"] = "stone";
+    block_entry[input]["textures"] = name;
+    blocks.merge_patch(block_entry);
+    write_json_to_file(blocks, user_data.resource_path + "/blocks.json", 2);
+
+    //Modify lang file
+    add_txt_entry(user_data.resource_path + "/texts/en_us.lang", "tile." + input + ".name=" + format_name(name));
+
+    return 0;
+}
+
+int create_batch_funcs(int count, string name)
+{
+    if(name.empty()) name = "new_func";
+
+    string function;
+    cout << "Function: (use $ to represent the function number)" << endl;
+
+    while (!cin.eof())
+    {
+        string line;
+        getline(cin, line);
+
+        if (cin.fail())
+            break;
+
+        function += line + '\n';
+    }
+
+    // Remove Trailing \n
+    function.erase(function.end() - 1);
+
+    for (int i = 1; i < count + 1; i++)
+    {
+        string write = function;
+        replace_all(write, "$", to_string(i));
+        overwrite_txt_entry(user_data.behavior_path + "/functions/" + name + "_" + to_string(i) + ".mcfunction", write);
+    }
+
+    return 0;
+}
+
 int add_animation_controller(nlohmann::ordered_json& entity, const string anim_name, const string query, const string exit_query, const string entry_line)
 {
     make_directory(user_data.behavior_path + "/animation_controllers/");
@@ -599,6 +720,18 @@ string format_name(string name)
     }
     
     return lang_name;
+}
+
+void replace_all(std::string& str, const std::string& from, const std::string& to)
+{
+    if (from.empty())
+        return;
+    size_t start_pos = 0;
+    while ((start_pos = str.find(from, start_pos)) != std::string::npos)
+    {
+        str.replace(start_pos, from.length(), to);
+        start_pos += to.length();
+    }
 }
 
 int main(int argc, char** argv) {
@@ -658,6 +791,12 @@ int main(int argc, char** argv) {
             break;
         case eNITM:
             create_new_item(indent, count);
+            break;
+        case eNBLK:
+            create_new_block(indent);
+            break;
+        case eFUNC:
+            create_batch_funcs(count, name);
             break;
         default:
             ShowUsage("help");
