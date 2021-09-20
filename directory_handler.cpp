@@ -1,23 +1,6 @@
-#pragma once
-#include <iostream>
-#include <fstream>
-#include <string>
-#include <limits.h>
-#include <list>
-#define DATAFILE "bedrock_directory.dat"
+#include "directory_handler.h"
 
-using namespace std;
-
-struct UserData
-{
-	std::string resource_path;
-	std::string behavior_path;
-
-	UserData(std::string resource_path_in = "", std::string behavior_path_in = "") : resource_path(resource_path_in), behavior_path(behavior_path_in) {}
-};
-
-UserData user_data;
-string get_path();
+struct UserData user_data;
 
 void write_user_data()
 {
@@ -31,14 +14,6 @@ void read_user_data()
 	std::ifstream fin(get_path());
 	fin >> user_data.resource_path >> user_data.behavior_path;
 	fin.close();
-}
-
-bool copy_file(const char* SRC, const char* DEST)
-{
-	ifstream src(SRC, ios::binary);
-	ofstream dest(DEST, ios::binary);
-	dest << src.rdbuf();
-	return src && dest;
 }
 
 #ifdef _WIN32

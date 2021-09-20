@@ -1,55 +1,5 @@
 // BedrockTerminal.cpp : This file contains the 'main' function. Program execution begins and ends there.#include <iostream>
-#include <fstream>
-#include <string>
-#include <vector>
-#include <map>
-#include "getopt.h"
-#include "json.hpp"
-#include "JsonSources.h"
-#include "DirectoryHandler.h"
-#include "lodepng.h"
-
-#ifdef _WIN32
-#define LINE_GREEN ""
-#define LINE_RESET ""
-#else
-#define LINE_GREEN "\033[32m"
-#define LINE_RESET "\033[0m"
-#endif
-
-using namespace std;
-using json = nlohmann::json;
-
-json get_component_groups_from_input();
-int add_groups_to_entity(const json &groups, nlohmann::ordered_json &entity);
-int write_json_to_file(const nlohmann::ordered_json &entity, string name, int spacing);
-bool does_entity_contain_family(string family, json entity);
-int create_new_entity(int spacing);
-int create_new_item(int spacing, int stack_size);
-int create_batch_funcs(int count, string name);
-int create_anim_function(string name);
-int add_animation_controller(nlohmann::ordered_json& entity, const string anim_name, const string query, const string exit_query, const string entry_line);
-string format_name(string name);
-vector<unsigned char> create_texture(int width, int height);
-void save_texture(vector<unsigned char> png, string path);
-void replace_all(std::string& str, const std::string& from, const std::string& to);
-
-const char* prog_name;
-
-enum CommandList
-{
-    eNULL,
-    eRDIR,
-    eBDIR,
-    eCOGR,
-    eNENT,
-    eNITM,
-    eNBLK,
-    eFUNC,
-    eAFUNC
-};
-
-static std::map < string, CommandList > mapCommandList;
+#include "BedrockTerminal.hpp"
 
 void ShowUsage(string command) {
     //TODO modify function to show usage examples for a passed command name
@@ -67,7 +17,7 @@ void init_command_list() {
     mapCommandList["afunc"] = eAFUNC;
 }
 
-int process_component_group(string family, string name, int spacing = 2) {
+int process_component_group(string family, string name, int spacing) {
     if (!name.empty()) {
         //Get file from name
         ifstream i(user_data.behavior_path + "/entities/" + name + ".json");
@@ -233,6 +183,7 @@ int process_component_group(string family, string name, int spacing = 2) {
     return 0;
 }
 
+// TODO add to entity class
 bool does_entity_contain_family(string family, json entity)
 {
     for (const auto& it : entity["minecraft:entity"]["components"]["minecraft:type_family"]["family"].items())
@@ -291,6 +242,7 @@ json get_component_groups_from_input() {
     return tmp;
 }
 
+// TODO add to entity class
 int add_groups_to_entity(const json &groups, nlohmann::ordered_json &entity) {
     //Process resets
     json groups_tmp = groups;
@@ -335,68 +287,6 @@ int add_groups_to_entity(const json &groups, nlohmann::ordered_json &entity) {
     string name = entity["minecraft:entity"]["description"]["identifier"];
     cout << name + ":\n" << "Adding Component Groups:\n" << LINE_GREEN << groups_tmp.dump(2) << LINE_RESET << "\nAdding Events:\n" << LINE_GREEN << events.dump(2) << LINE_RESET << endl;
     return 0;
-}
-
-int write_json_to_file(const nlohmann::ordered_json &_json, string name, int spacing)
-{
-    //Write modified entity
-    cout << "Saving " + name << endl;
-    make_directory(name);
-    ofstream o(name);
-    o << setw(spacing) << _json << endl;
-    o.close();
-
-    return 0;
-}
-
-int add_txt_entry(string path, string entry)
-{
-    make_directory(path);
-    cout << "Adding Entry to: " + path << endl;
-    ofstream o;
-    o.open(path, ios_base::app);
-    o << endl << entry;
-    o.close();
-
-    return 0;
-}
-
-int overwrite_txt_entry(string path, string entry)
-{
-    make_directory(path);
-    cout << "Writing File At: " + path << endl;
-    ofstream o;
-    o.open(path);
-    o << entry;
-    o.close();
-
-    return 0;
-}
-
-vector<unsigned char> create_texture(int width, int height)
-{
-    std::vector<unsigned char> image;
-    image.resize(width * height * 4);
-    for (int y = 0; y < height; y++)
-        for (int x = 0; x < width; x++)
-        {
-            image[4 * width * y + 4 * x + 0] = 255 * !(x & y);
-            image[4 * width * y + 4 * x + 1] = x ^ y;
-            image[4 * width * y + 4 * x + 2] = x | y;
-            image[4 * width * y + 4 * x + 3] = 255;
-        }
-
-    vector<unsigned char> png;
-    unsigned error = lodepng::encode(png, image, width, height);
-    cout << "Creating New Texture..." << endl;
-    return png;
-}
-
-void save_texture(vector<unsigned char> png, string path)
-{
-    make_directory(path);
-    cout << "Saving Texture To: " + path << endl;
-    lodepng::save_file(png, path);
 }
 
 int create_new_entity(int spacing)
@@ -462,13 +352,14 @@ int create_new_entity(int spacing)
     rp_mod["minecraft:geometry"] = nlohmann::ordered_json::array({ rp_geo });
     write_json_to_file(rp_mod, user_data.resource_path + "/models/entity/" + name + ".geo.json", spacing);
 
-    save_texture(create_texture(64, 32), user_data.resource_path + "/textures/entity/" + name + "/default.png");
+    vector<unsigned char> empty;
+    write_texture_to_file(empty, user_data.resource_path + "/textures/entity/" + name + "/default.png");
 
-    add_txt_entry(user_data.resource_path + "/texts/en_us.lang", "entity." + input + ".name=" + format_name(name));
+    append_txt_file(user_data.resource_path + "/texts/en_us.lang", "entity." + input + ".name=" + format_name(name));
 
     if (entity_type != 'd')
     {
-        add_txt_entry(user_data.resource_path + "/texts/en_us.lang", "item.spawn_egg.entity." + input + ".name=Spawn " + format_name(name));
+        append_txt_file(user_data.resource_path + "/texts/en_us.lang", "item.spawn_egg.entity." + input + ".name=Spawn " + format_name(name));
     }
 
     return 0;
@@ -506,7 +397,7 @@ int create_new_item(int spacing, int stack_size)
         item = JsonSources::bp_effect_item;
         add_animation_controller(player, name, "query.get_equipped_item_name == '" + name + "' && query.is_using_item", "!query.is_using_item", "/function " + name);
         write_json_to_file(player, user_data.behavior_path + "/entities/player.json", spacing);
-        overwrite_txt_entry(user_data.behavior_path + "/functions/" + name + ".mcfunction", "say " + name);
+        overwrite_txt_file(user_data.behavior_path + "/functions/" + name + ".mcfunction", "say " + name);
         break;
     case 'p':
         item = JsonSources::bp_effect_item;
@@ -532,13 +423,15 @@ int create_new_item(int spacing, int stack_size)
     getline(cin, texture_path);
     if (texture_path.empty())
     {
-        save_texture(create_texture(16, 16), user_data.resource_path + "/textures/items/" + name + ".png");
+        vector<unsigned char> empty;
+        write_texture_to_file(empty, user_data.resource_path + "/textures/items/" + name + ".png");
     }
     else
     {
         if (!copy_file(texture_path.c_str(), (user_data.resource_path + "/textures/items/" + name + ".png").c_str()))
         {
-            save_texture(create_texture(16, 16), user_data.resource_path + "/textures/items/" + name + ".png");
+            vector<unsigned char> empty;
+            write_texture_to_file(empty, user_data.resource_path + "/textures/items/" + name + ".png");
         }
     }
 
@@ -560,7 +453,7 @@ int create_new_item(int spacing, int stack_size)
     write_json_to_file(item_texture, user_data.resource_path + "/textures/item_texture.json", 2);
 
     //Modify lang file
-    add_txt_entry(user_data.resource_path + "/texts/en_us.lang", "item." + input + ".name=" + format_name(name));
+    append_txt_file(user_data.resource_path + "/texts/en_us.lang", "item." + input + ".name=" + format_name(name));
     
     return 0;
 }
@@ -598,13 +491,15 @@ int create_new_block(int spacing)
     getline(cin, texture_path);
     if (texture_path.empty())
     {
-        save_texture(create_texture(16, 16), user_data.resource_path + "/textures/blocks/" + name + ".png");
+        vector<unsigned char> empty;
+        write_texture_to_file(empty, user_data.resource_path + "/textures/blocks/" + name + ".png");
     }
     else
     {
         if (!copy_file(texture_path.c_str(), (user_data.resource_path + "/textures/blocks/" + name + ".png").c_str()))
         {
-            save_texture(create_texture(16, 16), user_data.resource_path + "/textures/blocks/" + name + ".png");
+            vector<unsigned char> empty;
+            write_texture_to_file(empty, user_data.resource_path + "/textures/blocks/" + name + ".png");
         }
     }
     
@@ -632,7 +527,7 @@ int create_new_block(int spacing)
     write_json_to_file(blocks, user_data.resource_path + "/blocks.json", 2);
 
     //Modify lang file
-    add_txt_entry(user_data.resource_path + "/texts/en_us.lang", "tile." + input + ".name=" + format_name(name));
+    append_txt_file(user_data.resource_path + "/texts/en_us.lang", "tile." + input + ".name=" + format_name(name));
 
     return 0;
 }
@@ -662,7 +557,7 @@ int create_batch_funcs(int count, string name)
     {
         string write = function;
         replace_all(write, "$", to_string(i));
-        overwrite_txt_entry(user_data.behavior_path + "/functions/" + name + "_" + to_string(i) + ".mcfunction", write);
+        overwrite_txt_file(user_data.behavior_path + "/functions/" + name + "_" + to_string(i) + ".mcfunction", write);
     }
 
     return 0;
@@ -703,7 +598,7 @@ int create_anim_function(string name)
     // Remove Trailing \n
     function.erase(function.end() - 1);
     
-    overwrite_txt_entry(user_data.behavior_path + "/functions/" + func_name + ".mcfunction", function);
+    overwrite_txt_file(user_data.behavior_path + "/functions/" + func_name + ".mcfunction", function);
 
     ifstream i;
     make_directory(user_data.behavior_path + "/entities/");
@@ -727,6 +622,7 @@ int create_anim_function(string name)
     return 0;
 }
 
+// TODO add to entity class
 int add_animation_controller(nlohmann::ordered_json& entity, const string anim_name, const string query, const string exit_query, const string entry_line)
 {
     make_directory(user_data.behavior_path + "/animation_controllers/");
@@ -763,6 +659,7 @@ int add_animation_controller(nlohmann::ordered_json& entity, const string anim_n
     return 0;
 }
 
+// Add to string helpers
 string format_name(string name)
 {
     string lang_name = name;
