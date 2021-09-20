@@ -150,7 +150,7 @@ vector<string> get_directory_files(const string path, const string filter)
 		else if (val.find(".") != string::npos)
 		{
 			//cout << "Found Sub" << endl;
-			vector<string> sub_vector = get_directory_files(val + "/");
+			vector<string> sub_vector = get_directory_files(val + "/", filter);
 			for (const auto& sub_val : sub_vector)
 			{
 				files.push_back(sub_val);
