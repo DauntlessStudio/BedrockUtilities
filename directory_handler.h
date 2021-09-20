@@ -1,9 +1,6 @@
 #pragma once
-#include <iostream>
-#include <fstream>
-#include <string>
+#include "core.h"
 #include <limits.h>
-#include <list>
 #define DATAFILE "bedrock_directory.dat"
 
 using namespace std;
@@ -23,5 +20,5 @@ void write_user_data();
 void read_user_data();
 int write_resource_dir(bool bUseSource, string arg);
 int write_behavior_dir(bool bUseSource, string arg);
-list<string> get_directory_files(const string path);
+vector<string> get_directory_files(const string path, const string filter);
 int make_directory(const string path);

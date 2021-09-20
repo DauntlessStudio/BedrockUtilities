@@ -77,11 +77,17 @@ int write_behavior_dir(bool bUseSource, string arg)
 	return 1;
 }
 
-list<string> get_directory_files(const string path)
+vector<string> get_directory_files(const string path, const string filter)
 {
-	list<string> files;
+	vector<string> files;
 	for (const auto& file : std::filesystem::recursive_directory_iterator(path))
-		files.push_back(file.path().string());
+	{
+		if (file.path().string().find(filter) != string::npos)
+		{
+			files.push_back(file.path().string());
+		}
+	}
+		
 	return files;
 }
 
@@ -125,7 +131,7 @@ int make_directory(const string path)
 	return 0;
 }
 
-list<string> get_directory_files(const string path)
+list<string> get_directory_files(const string path, const string filter)
 {
 	list<string> files;
 	string tmp_str = "ls " + path;
@@ -137,7 +143,7 @@ list<string> get_directory_files(const string path)
 	{
 		string val = path + buf;
 		val.erase(remove(val.begin(), val.end(), '\n'), val.end());
-		if (val.find(".json") != string::npos)
+		if (val.find(filter) != string::npos)
 		{
 			files.push_back(val);
 		}

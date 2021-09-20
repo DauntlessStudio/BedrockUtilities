@@ -1,6 +1,6 @@
 #include "file_manager.hpp"
 
-int write_json_to_file(const nlohmann::ordered_json& _json, string path, int spacing)
+int write_json_to_file(const nlohmann::ordered_json& object, string path, int spacing)
 {
     //Write modified entity
     make_directory(path);
@@ -8,7 +8,7 @@ int write_json_to_file(const nlohmann::ordered_json& _json, string path, int spa
 
 	try
 	{
-		o << setw(spacing) << _json << endl;
+		o << setw(spacing) << object << endl;
 	}
 	catch (const std::exception&)
 	{
@@ -18,6 +18,27 @@ int write_json_to_file(const nlohmann::ordered_json& _json, string path, int spa
 
     cout << "Saved json at: " + path << endl;
     o.close();
+
+    return 0;
+}
+
+int read_json_from_file(nlohmann::ordered_json& object, string path, string error_message)
+{
+    ifstream i;
+    i.open(path);
+
+    try
+    {
+        object = nlohmann::ordered_json::parse(i, nullptr, true, true);
+    }
+    catch (const std::exception& e)
+    {
+        cout << error_message << endl;
+        cerr << e.what() << endl;
+        return -1;
+    }
+
+    i.close();
 
     return 0;
 }
