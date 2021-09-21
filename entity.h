@@ -1,12 +1,12 @@
 #pragma once
 #include "core.h"
+#include "file_manager.hpp"
 
 using namespace std;
 using namespace nlohmann;
 
 namespace bedrock
 {
-
 	class entity
 	{
 	public:

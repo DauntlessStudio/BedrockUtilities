@@ -5,8 +5,6 @@
 #include <vector>
 
 #include "json.hpp"
-#include "directory_handler.h"
-#include "file_manager.hpp"
 
 #ifdef _WIN32
 #define LINE_GREEN ""

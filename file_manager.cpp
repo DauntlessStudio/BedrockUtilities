@@ -1,4 +1,5 @@
 #include "file_manager.hpp"
+#include "entity.h"
 
 int write_json_to_file(const nlohmann::ordered_json& object, string path, int spacing)
 {
@@ -41,6 +42,31 @@ int read_json_from_file(nlohmann::ordered_json& object, string path, string erro
     i.close();
 
     return 0;
+}
+
+nlohmann::ordered_json read_json_from_input(string input_message, string error_message, bool abort_on_fail)
+{
+    cout << input_message << endl;
+    string input = read_multiline_input();
+
+    if (input[0] != '{')
+    {
+        input.insert(0, "{");
+        input.push_back('}');
+    }
+
+    ordered_json jo;
+    try
+    {
+        jo = ordered_json::parse(input, nullptr, true, false);
+    }
+    catch (...)
+    {
+        cerr << error_message << endl;
+        if(abort_on_fail) exit(-1);
+    }
+
+    return jo;
 }
 
 int overwrite_txt_file(string path, string entry)
@@ -102,4 +128,32 @@ void write_texture_to_file(vector<unsigned char> png, string path, int width, in
 
     lodepng::save_file(png, path);
     cout << "Saved Texture At: " + path << endl;
+}
+
+vector<bedrock::entity> get_bp_entities(string name, string family)
+{
+    vector<bedrock::entity> entities;
+    if (!name.empty())
+    {
+        bedrock::entity entity(user_data.behavior_path + "/entities/" + name + ".json");
+        entities.push_back(entity);
+    }
+    else
+    {
+        vector<string> files = get_directory_files(user_data.behavior_path + "/entities/", ".json");
+        for (const auto& file : files)
+        {
+            bedrock::entity entity(file);
+
+            if (!family.empty() && entity.does_entity_contain_family(family))
+            {
+                entities.push_back(entity);
+            }
+            else if (family.empty())
+            {
+                entities.push_back(entity);
+            }
+        }
+    }
+    return entities;
 }

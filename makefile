@@ -1,5 +1,5 @@
 CC=g++
-OBJ = BedrockTerminal.cpp lodepng.cpp directory_handler.cpp file_manager.cpp entity.cpp
+OBJ = BedrockTerminal.cpp lodepng.cpp directory_handler.cpp file_manager.cpp entity.cpp utilities.cpp
 SRC = /data/data/com.termux/files/usr/bin
 
 bed: $(OBJ)

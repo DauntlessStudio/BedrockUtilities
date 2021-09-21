@@ -1,15 +1,76 @@
 // BedrockTerminal.cpp : This file contains the 'main' function. Program execution begins and ends there.#include <iostream>
 #include "BedrockTerminal.hpp"
 
-void ShowUsage(string command) {
-    //TODO modify function to show usage examples for a passed command name
-    std::cout << "Try '" << prog_name << " -h' for more information" << std::endl;
+void show_usage(string command) {
+    switch (mapCommandList[command])
+    {
+    case eRDIR:
+        cout << prog_name << " [<options>] rdir" << endl;
+        cout << "options:\n  [-d <path>] Directory, sets the resource directory to <path>. Defaults to current working directory" << endl;
+        cout << "  [-i <indent>] Indent, sets the output file's indent level. Defaults to 2" << endl;
+        break;
+    case eBDIR:
+        cout << prog_name << " [<options>] bdir" << endl;
+        cout << "options:\n  [-d <path>] Directory, sets the behavior directory to <path>. Defaults to current working directory" << endl;
+        cout << "  [-i <indent>] Indent, sets the output file's indent level. Defaults to 2" << endl;
+        break;
+    case eCOGR:
+        cout << prog_name << " [<options>] cogr" << endl;
+        cout << "options:\n  [-i <indent>] Indent, sets the output file's indent level. Defaults to 2" << endl;
+        cout << "  [-n <filename>] Name, uses bp/entities/<filename>.json as the file to modify" << endl;
+        cout << "  [-f <family>] Family, modifies all entities in bp/entities/ with the desired family type" << endl;
+        cout << "  Modifies all entites in bp/entities/ if [-n|-f] are not proided" << endl;
+        break;
+    case eCOMP:
+        cout << prog_name << " [<options>] comp" << endl;
+        cout << "options:\n  [-i <indent>] Indent, sets the output file's indent level. Defaults to 2" << endl;
+        cout << "  [-n <filename>] Name, uses bp/entities/<filename>.json as the file to modify" << endl;
+        cout << "  [-f <family>] Family, modifies all entities in bp/entities/ with the desired family type" << endl;
+        cout << "  Modifies all entites in bp/entities/ if [-n|-f] are not proided" << endl;
+        break;
+    case eNENT:
+        cout << prog_name << " [<options>] nent" << endl;
+        cout << "options:\n  [-i <indent>] Indent, sets the output file's indent level. Defaults to 2" << endl;
+        break;
+    case eNITM:
+        cout << prog_name << " [<options>] nitm" << endl;
+        cout << "options:\n  [-i <indent>] Indent, sets the output file's indent level. Defaults to 2" << endl;
+        break;
+    case eNBLK:
+        cout << prog_name << " [<options>] nblk" << endl;
+        cout << "options:\n  [-i <indent>] Indent, sets the output file's indent level. Defaults to 2" << endl;
+        break;
+    case eFUNC:
+        cout << prog_name << " [<options>] func" << endl;
+        cout << "options:\n  [-c <count>] Count, the number of functions to create in the batch" << endl;
+        cout << "  [-n <name>] Name, the name of the functions. Defaults to 'new_func'. Function names are appended with '_[#function_number]'" << endl;
+        break;
+    case eAFUNC:
+        cout << prog_name << " [<options>] afunc" << endl;
+        cout << "options:\n  [-n <name>] Name, the name of the entity to create the animation controller for. Defaults to 'player'" << endl;
+        break;
+    default:
+        cout << "usage: " << prog_name << " [<args>] <command>" << endl;
+        cout << "command list:" << endl;
+        cout << "  rdir          Set resource directory" << endl;
+        cout << "  bdir          Set behavior directory" << endl;
+        cout << "  cogr          Add new component groups" << endl;
+        cout << "  comp          Add new components" << endl;
+        cout << "  nent          Create new entity" << endl;
+        cout << "  nitm          Create new item" << endl;
+        cout << "  nblk          Create new block" << endl;
+        cout << "  func          Create new functions" << endl;
+        cout << "  afunc         Create new animation controller function" << endl << endl;
+        cout << "'" << prog_name << " -h <command>' for more information" << endl;
+        break;
+    }
 }
 
 void init_command_list() {
     mapCommandList["rdir"] = eRDIR;
     mapCommandList["bdir"] = eBDIR;
     mapCommandList["cogr"] = eCOGR;
+    mapCommandList["comp"] = eCOMP;
     mapCommandList["nent"] = eNENT;
     mapCommandList["nitm"] = eNITM;
     mapCommandList["nblk"] = eNBLK;
@@ -17,31 +78,10 @@ void init_command_list() {
     mapCommandList["afunc"] = eAFUNC;
 }
 
-int process_component_group(string family, string name, int spacing) {
-
-    vector<bedrock::entity> entities;
-    if (!name.empty())
-    {
-        bedrock::entity entity(user_data.behavior_path + "/entities/" + name + ".json");
-        entities.push_back(entity);
-    }
-    else
-    {
-        vector<string> files = get_directory_files(user_data.behavior_path + "/entities/", ".json");
-        for (const auto& file : files)
-        {
-            bedrock::entity entity(file);
-
-            if (!family.empty() && entity.does_entity_contain_family(family))
-            {
-                entities.push_back(entity);
-            }
-            else if(family.empty())
-            {
-                entities.push_back(entity);
-            }
-        }
-    }
+int create_component_group(string family, string name, int spacing) 
+{
+    string input;
+    vector<bedrock::entity> entities = get_bp_entities(name, family);
     
     if(entities.size() <= 0) {
         cout << "No valid entities found\nAborting..." << endl;
@@ -49,7 +89,19 @@ int process_component_group(string family, string name, int spacing) {
     }
 
     cout << "Found " << entities.size() << " entities" << endl;
-    json groups = get_component_groups_from_input();
+
+    ordered_json groups = read_json_from_input("New Component Groups:", "Invalid Json\nAborting...", true);
+    for (auto& el : groups.items())
+    {
+        std::cout << "Create Reset For: " << el.key() << "? [y/n]:" << endl;
+        getline(cin, input);
+        if (input != "y" && input != "Y")
+        {
+            continue;
+        }
+
+        groups[el.key() + "_reset"] = el.value();
+    }
 
     for (auto& entity : entities)
     {
@@ -57,9 +109,9 @@ int process_component_group(string family, string name, int spacing) {
     }
 
     //Confirm input and write file
-    cout << "Save File(s)? [y/n]";
-    string input;
-    cin >> input;
+    cout << "Save File(s)? [y/n]" << endl;
+    getline(cin, input);
+    cout << input << endl;
     if (input == "y" || input == "Y")
     {
         for (auto& entity : entities)
@@ -75,35 +127,42 @@ int process_component_group(string family, string name, int spacing) {
     return 0;
 }
 
-json get_component_groups_from_input() {
+int create_components(string family, string name, int spacing)
+{
     string input;
-    std::cout << "New Component Groups:" << endl;
+    vector<bedrock::entity> entities = get_bp_entities(name, family);
+
+    if (entities.size() <= 0)
+    {
+        cout << "No valid entities found\nAborting..." << endl;
+        return -1;
+    }
+
+    cout << "Found " << entities.size() << " entities" << endl;
+
+    ordered_json components = read_json_from_input("New Components", "Invalid Json\nAborting...", true);
+
+    for (auto& entity : entities)
+    {
+        entity.entity_json["minecraft:entity"]["components"].merge_patch(components);
+    }
+
+    //Confirm input and write file
+    cout << "Save File(s)? [y/n]";
     getline(cin, input);
-    input = "{" + input + "}";
-    json jo;
-    try
+    if (input == "y" || input == "Y")
     {
-        jo = json::parse(input);
-    }
-    catch (...)
-    {
-        cerr << "Invalid Entry, Aborting..." << endl;
-        exit(-1);
-    }
-    
-    json tmp = jo;
-    //Process reset inputs
-    for(auto& el: jo.items()) {
-        std::cout << "Create Reset For: " << el.key() << "? [y/n]:";
-        cin >> input;
-        if(input != "y" && input != "Y") {
-            continue;
+        for (auto& entity : entities)
+        {
+            write_json_to_file(entity.entity_json, entity.file_path, spacing);
         }
-
-        tmp[el.key() + "_reset"] = el.value();
+    }
+    else
+    {
+        cout << "Cancelled" << endl;
     }
 
-    return tmp;
+    return 0;
 }
 
 int create_new_entity(int spacing)
@@ -350,22 +409,8 @@ int create_batch_funcs(int count, string name)
 {
     if(name.empty()) name = "new_func";
 
-    string function;
     cout << "Function: (use $ to represent the function number)" << endl;
-
-    while (!cin.eof())
-    {
-        string line;
-        getline(cin, line);
-
-        if (cin.fail())
-            break;
-
-        function += line + '\n';
-    }
-
-    // Remove Trailing \n
-    function.erase(function.end() - 1);
+    string function = read_multiline_input();
 
     for (int i = 1; i < count + 1; i++)
     {
@@ -424,46 +469,11 @@ int create_anim_function(string name)
     return 0;
 }
 
-// Add to string helpers
-string format_name(string name)
-{
-    string lang_name = name;
-    bool caps_next = true;
-    for (size_t i = 0; i < name.length(); i++)
-    {
-        if (caps_next)
-        {
-            lang_name[i] = toupper(lang_name[i]);
-            caps_next = false;
-        }
-
-        if (name[i] == '_')
-        {
-            lang_name[i] = ' ';
-            caps_next = true;
-        }
-    }
-    
-    return lang_name;
-}
-
-void replace_all(std::string& str, const std::string& from, const std::string& to)
-{
-    if (from.empty())
-        return;
-    size_t start_pos = 0;
-    while ((start_pos = str.find(from, start_pos)) != std::string::npos)
-    {
-        str.replace(start_pos, from.length(), to);
-        start_pos += to.length();
-    }
-}
-
 int main(int argc, char** argv) {
     prog_name = argv[0];
 
     if (argc < 2) {
-        ShowUsage("help");
+        show_usage("help");
         return -1;
     }
 
@@ -472,10 +482,11 @@ int main(int argc, char** argv) {
     string name;
     int opt;
     bool bUseSource = true;
+    bool show_help = false;
     int indent = 2;
     int count = 64;
 
-    while ((opt = bed_getopt(argc, argv, "i:d:f:n:c:")) != -1) {
+    while ((opt = bed_getopt(argc, argv, "i:d:f:n:c:h")) != -1) {
         switch (opt) {
             case 'd':
                 bUseSource = false;
@@ -493,6 +504,9 @@ int main(int argc, char** argv) {
             case 'c':
                 count = atoi(bed_optarg);
                 break;
+            case 'h':
+                show_help = true;
+                break;
             default:
             break;
         }
@@ -500,6 +514,12 @@ int main(int argc, char** argv) {
 
     read_user_data();
     init_command_list();
+
+    if (show_help)
+    {
+        show_usage(argv[argc-1]);
+        return 0;
+    }
 
     switch (mapCommandList[argv[argc-1]]) {
         case eRDIR:
@@ -509,7 +529,10 @@ int main(int argc, char** argv) {
             write_behavior_dir(bUseSource, dirArg);
             break;
         case eCOGR:
-            process_component_group(family, name, indent);
+            create_component_group(family, name, indent);
+            break;
+        case eCOMP:
+            create_components(family, name, indent);
             break;
         case eNENT:
             create_new_entity(indent);
@@ -527,7 +550,7 @@ int main(int argc, char** argv) {
             create_anim_function(name);
             break;
         default:
-            ShowUsage("help");
+            show_usage("help");
             break;
     }
 
