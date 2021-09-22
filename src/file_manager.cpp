@@ -1,5 +1,5 @@
-#include "file_manager.hpp"
-#include "entity.h"
+#include "includes/file_manager.hpp"
+#include "includes/entity.h"
 
 int write_json_to_file(const nlohmann::ordered_json& object, string path, int spacing)
 {

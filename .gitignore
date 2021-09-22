@@ -34,20 +34,12 @@
 # Folders
 .vs/
 Debug
-%USERPROFILE%
 Release
 
-# Other Crap
+# Visual Studio Files
 *.aps
 *.sln
 *.vcxproj
 *.filters
 *.user
 *.vcxproj
-BedrockTerminal.vcxproj
-BedrockTerminal.vcxproj
-Debug/BedrockTerminal.ilk
-Debug/BedrockTerminal.pdb
-Debug/BedrockTerminal.tlog/CL.read.1.tlog
-Debug/vc142.idb
-Debug/vc142.pdb

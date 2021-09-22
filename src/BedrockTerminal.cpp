@@ -1,5 +1,5 @@
 // BedrockTerminal.cpp : This file contains the 'main' function. Program execution begins and ends there.#include <iostream>
-#include "BedrockTerminal.hpp"
+#include "includes/BedrockTerminal.hpp"
 
 void show_usage(string command) {
     switch (mapCommandList[command])
