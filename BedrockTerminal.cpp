@@ -17,6 +17,7 @@ void show_usage(string command) {
     case eCOGR:
         cout << prog_name << " [<options>] cogr" << endl;
         cout << "options:\n  [-i <indent>] Indent, sets the output file's indent level. Defaults to 2" << endl;
+        cout << "  [-r] Remove, removes the component groups" << endl;
         cout << "  [-n <filename>] Name, uses bp/entities/<filename>.json as the file to modify" << endl;
         cout << "  [-f <family>] Family, modifies all entities in bp/entities/ with the desired family type" << endl;
         cout << "  Modifies all entites in bp/entities/ if [-n|-f] are not proided" << endl;
@@ -24,6 +25,7 @@ void show_usage(string command) {
     case eCOMP:
         cout << prog_name << " [<options>] comp" << endl;
         cout << "options:\n  [-i <indent>] Indent, sets the output file's indent level. Defaults to 2" << endl;
+        cout << "  [-r] Remove, removes the component groups" << endl;
         cout << "  [-n <filename>] Name, uses bp/entities/<filename>.json as the file to modify" << endl;
         cout << "  [-f <family>] Family, modifies all entities in bp/entities/ with the desired family type" << endl;
         cout << "  Modifies all entites in bp/entities/ if [-n|-f] are not proided" << endl;
@@ -58,8 +60,8 @@ void show_usage(string command) {
         cout << "command list:" << endl;
         cout << "  rdir          Set resource directory" << endl;
         cout << "  bdir          Set behavior directory" << endl;
-        cout << "  cogr          Add new component groups" << endl;
-        cout << "  comp          Add new components" << endl;
+        cout << "  cogr          Add or remove component groups" << endl;
+        cout << "  comp          Add or remove components" << endl;
         cout << "  nent          Create new entity" << endl;
         cout << "  nitm          Create new item" << endl;
         cout << "  nman          Create new resource/behavior packs" << endl;
@@ -86,6 +88,8 @@ void init_command_list() {
 
 int create_component_group(string family, string name, int spacing) 
 {
+    if(!user_data.valid_bp()) abort_program("Invalid Behavior Path at " + user_data.behavior_path + "\nAborting...");
+
     string input;
     vector<bedrock::entity> entities = get_bp_entities(name, family);
     
@@ -133,8 +137,52 @@ int create_component_group(string family, string name, int spacing)
     return 0;
 }
 
+int remove_component_group(string family, string name, int spacing)
+{
+    if (!user_data.valid_bp()) abort_program("Invalid Behavior Path at " + user_data.behavior_path + "\nAborting...");
+
+    string input;
+    vector<bedrock::entity> entities = get_bp_entities(name, family);
+
+    if (entities.size() <= 0)
+    {
+        cout << "No valid entities found\nAborting..." << endl;
+        return -1;
+    }
+
+    cout << "Found " << entities.size() << " entities" << endl;
+
+    ordered_json groups = read_json_from_input("Component Groups to Remove:", "Invalid Json\nAborting...", true);
+
+    cout << "Removing Groups" << endl;
+
+    for (auto& entity : entities)
+    {
+        entity.remove_groups_from_entity(groups);
+    }
+
+    //Confirm input and write file
+    cout << "Save File(s)? [y/n]";
+    getline(cin, input);
+    if (input == "y" || input == "Y")
+    {
+        for (auto& entity : entities)
+        {
+            write_json_to_file(entity.entity_json, entity.file_path, spacing);
+        }
+    }
+    else
+    {
+        cout << "Cancelled" << endl;
+    }
+
+    return 0;
+}
+
 int create_components(string family, string name, int spacing)
 {
+    if (!user_data.valid_bp()) abort_program("Invalid Behavior Path at " + user_data.behavior_path + "\nAborting...");
+
     string input;
     vector<bedrock::entity> entities = get_bp_entities(name, family);
 
@@ -171,8 +219,55 @@ int create_components(string family, string name, int spacing)
     return 0;
 }
 
+int remove_components(string family, string name, int spacing)
+{
+    if (!user_data.valid_bp()) abort_program("Invalid Behavior Path at " + user_data.behavior_path + "\nAborting...");
+
+    string input;
+    vector<bedrock::entity> entities = get_bp_entities(name, family);
+
+    if (entities.size() <= 0)
+    {
+        cout << "No valid entities found\nAborting..." << endl;
+        return -1;
+    }
+
+    cout << "Found " << entities.size() << " entities" << endl;
+
+    ordered_json components = read_json_from_input("New Components", "Invalid Json\nAborting...", true);
+
+    cout << "Removing Components" << endl;
+
+    for (auto& entity : entities)
+    {
+        for (auto& it : components.items())
+        {
+            entity.entity_json["minecraft:entity"]["components"].erase(it.key());
+        }
+    }
+
+    //Confirm input and write file
+    cout << "Save File(s)? [y/n]";
+    getline(cin, input);
+    if (input == "y" || input == "Y")
+    {
+        for (auto& entity : entities)
+        {
+            write_json_to_file(entity.entity_json, entity.file_path, spacing);
+        }
+    }
+    else
+    {
+        cout << "Cancelled" << endl;
+    }
+
+    return 0;
+}
+
 int create_new_entity(int spacing)
 {
+    if (!user_data.valid_bp()) abort_program("Invalid Behavior Path at " + user_data.behavior_path + "\nAborting...");
+
     string input;
     cout << "Entity Name:" << endl;
     getline(cin, input);
@@ -222,6 +317,8 @@ int create_new_entity(int spacing)
         return 0;
     }
 
+    if (!user_data.valid_rp()) abort_program("Invalid Resource Path at " + user_data.resource_path + "\nAborting...");
+
     nlohmann::ordered_json rp_ent = JsonSources::rp_entity;
     rp_ent["minecraft:client_entity"]["description"]["identifier"] = input;
     rp_ent["minecraft:client_entity"]["description"]["textures"]["default"] = "textures/entity/" + name + "/default";
@@ -249,6 +346,8 @@ int create_new_entity(int spacing)
 
 int create_new_item(int spacing, int stack_size)
 {
+    if (!user_data.valid_bp()) abort_program("Invalid Behavior Path at " + user_data.behavior_path + "\nAborting...");
+
     string input;
     cout << "Item Name:" << endl;
     getline(cin, input);
@@ -295,6 +394,8 @@ int create_new_item(int spacing, int stack_size)
     item["minecraft:item"]["components"]["minecraft:max_stack_size"] = stack_size > 64 ? 64 : stack_size;
     write_json_to_file(item, user_data.behavior_path + "/items/" + name + ".json", spacing);
 
+    if (!user_data.valid_rp()) abort_program("Invalid Resource Path at " + user_data.resource_path + "\nAborting...");
+
     // Write Item Texture
     string texture_path;
     cout << "Texture Path:" << endl;
@@ -339,6 +440,8 @@ int create_new_item(int spacing, int stack_size)
 
 int create_new_block(int spacing)
 {
+    if (!user_data.valid_bp()) abort_program("Invalid Behavior Path at " + user_data.behavior_path + "\nAborting...");
+
     string input;
     cout << "Block Name:" << endl;
     getline(cin, input);
@@ -362,6 +465,8 @@ int create_new_block(int spacing)
 
     // Write Block BP
     write_json_to_file(block, user_data.behavior_path + "/blocks/" + name + ".json", spacing);
+
+    if (!user_data.valid_rp()) abort_program("Invalid Resource Path at " + user_data.resource_path + "\nAborting...");
 
     // Write Block Texture
     string texture_path;
@@ -413,6 +518,8 @@ int create_new_block(int spacing)
 
 int create_batch_funcs(int count, string name)
 {
+    if (!user_data.valid_bp()) abort_program("Invalid Behavior Path at " + user_data.behavior_path + "\nAborting...");
+
     if(name.empty()) name = "new_func";
 
     cout << "Function: (use $ to represent the function number)" << endl;
@@ -430,6 +537,8 @@ int create_batch_funcs(int count, string name)
 
 int create_anim_function(string name)
 {
+    if (!user_data.valid_bp()) abort_program("Invalid Behavior Path at " + user_data.behavior_path + "\nAborting...");
+
     if (name.empty()) name = "player";
 
     string func_name;
@@ -477,19 +586,21 @@ int create_anim_function(string name)
 
 int create_manifest()
 {
+    if (!user_data.valid_bp()) abort_program("Invalid Behavior Path at " + user_data.behavior_path + "\nAborting...");
+
     string bp_name;
     cout << "Behavior Pack Name:" << endl;
     getline(cin, bp_name);
 
-    size_t index = user_data.behavior_path.find_last_of(SLASH);
-    string bp_path = user_data.behavior_path.substr(0, index) + SLASH + bp_name + "/";
+    size_t index = user_data.behavior_path.find("development_behavior_packs") + 27;
+    string bp_path = user_data.behavior_path.substr(0, index) + bp_name + "/";
 
     string rp_name;
     cout << "Resource Pack Name:" << endl;
     getline(cin, rp_name);
 
-    index = user_data.resource_path.find_last_of(SLASH);
-    string rp_path = user_data.resource_path.substr(0, index) + SLASH + rp_name + "/";
+    index = user_data.resource_path.find("development_resource_packs") + 27;
+    string rp_path = user_data.resource_path.substr(0, index) + rp_name + "/";
 
     nlohmann::ordered_json manifest = JsonSources::manifest;
     nlohmann::ordered_json sub_manifest = JsonSources::sub_manifest;
@@ -502,6 +613,8 @@ int create_manifest()
     overwrite_txt_file(bp_path + "texts/en_US.lang", "## BEHAVIOR PACK MANIFEST =======================================================\npack.name=" + bp_name + "\npack.description=This behavior pack is required for " + bp_name + " to run properly");
     write_json_to_file(json({"en_US"}), bp_path + "/texts/languages.json");
 
+    if (!user_data.valid_rp()) abort_program("Invalid Resource Path at " + user_data.resource_path + "\nAborting...");
+
     manifest["header"]["uuid"] = uuid::generate_uuid_v4();
     sub_manifest["uuid"] = uuid::generate_uuid_v4();
     manifest["modules"] = json::array({ sub_manifest });
@@ -511,6 +624,12 @@ int create_manifest()
     write_json_to_file(json({ "en_US" }), rp_path + "/texts/languages.json");
 
     return 0;
+}
+
+int abort_program(string message)
+{
+    cout << message << endl;
+    exit(-1);
 }
 
 int main(int argc, char** argv) {
@@ -527,10 +646,11 @@ int main(int argc, char** argv) {
     int opt;
     bool bUseSource = true;
     bool show_help = false;
+    bool remove = false;
     int indent = 2;
     int count = 64;
 
-    while ((opt = bed_getopt(argc, argv, "i:d:f:n:c:h")) != -1) {
+    while ((opt = bed_getopt(argc, argv, "i:d:f:n:c:hr")) != -1) {
         switch (opt) {
             case 'd':
                 bUseSource = false;
@@ -550,6 +670,9 @@ int main(int argc, char** argv) {
                 break;
             case 'h':
                 show_help = true;
+                break;
+            case 'r':
+                remove = true;
                 break;
             default:
             break;
@@ -573,10 +696,24 @@ int main(int argc, char** argv) {
             write_behavior_dir(bUseSource, dirArg);
             break;
         case eCOGR:
-            create_component_group(family, name, indent);
+            if (remove)
+            {
+                remove_component_group(family, name, indent);
+            }
+            else
+            {
+                create_component_group(family, name, indent);
+            }
             break;
         case eCOMP:
-            create_components(family, name, indent);
+            if (remove)
+            {
+                remove_components(family, name, indent);
+            }
+            else
+            {
+                create_components(family, name, indent);
+            }
             break;
         case eNENT:
             create_new_entity(indent);

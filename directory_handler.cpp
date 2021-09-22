@@ -16,6 +16,16 @@ void read_user_data()
 	fin.close();
 }
 
+bool UserData::valid_bp()
+{
+	return behavior_path.find("development_behavior_packs") != string::npos;
+}
+
+bool UserData::valid_rp()
+{
+	return resource_path.find("development_resource_packs") != string::npos;
+}
+
 #ifdef _WIN32
 #include <filesystem>
 

@@ -98,6 +98,19 @@ void entity::add_groups_to_entity(const json& groups)
     return;
 }
 
+void entity::remove_groups_from_entity(const json& groups)
+{
+    for (auto& el : groups.items())
+    {
+        entity_json["minecraft:entity"]["component_groups"].erase(el.key());
+        entity_json["minecraft:entity"]["component_groups"].erase(el.key() + "_reset");
+        entity_json["minecraft:entity"]["events"].erase(el.key());
+        entity_json["minecraft:entity"]["events"].erase(el.key() + "_reset");
+    }
+
+    return;
+}
+
 void entity::add_animation_controller(const string anim_name, const string query, const string exit_query, const string entry_line)
 {
     make_directory(user_data.behavior_path + "/animation_controllers/");

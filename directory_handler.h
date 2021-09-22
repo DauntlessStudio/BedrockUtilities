@@ -11,6 +11,9 @@ struct UserData
 	std::string behavior_path;
 
 	UserData(std::string resource_path_in = "", std::string behavior_path_in = "") : resource_path(resource_path_in), behavior_path(behavior_path_in) {}
+
+	bool valid_bp();
+	bool valid_rp();
 };
 
 extern struct UserData user_data;

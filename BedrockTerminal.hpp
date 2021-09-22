@@ -13,12 +13,15 @@ using namespace std;
 using json = nlohmann::json;
 
 int create_component_group(string family, string name, int spacing);
+int remove_component_group(string family, string name, int spacing);
 int create_components(string family, string name, int spacing);
+int remove_components(string family, string name, int spacing);
 int create_new_entity(int spacing);
 int create_new_item(int spacing, int stack_size);
 int create_batch_funcs(int count, string name);
 int create_anim_function(string name);
 int create_manifest();
+int abort_program(string message);
 
 enum CommandList
 {
