@@ -9,7 +9,9 @@
 #ifdef _WIN32
 #define LINE_GREEN ""
 #define LINE_RESET ""
+#define SLASH '\\'
 #else
 #define LINE_GREEN "\033[32m"
 #define LINE_RESET "\033[0m"
+#define SlASH '/'
 #endif

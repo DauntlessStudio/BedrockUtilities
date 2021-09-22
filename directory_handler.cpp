@@ -25,7 +25,7 @@ string get_path()
 	string path;
 	if (userpath != nullptr)
 	{
-		path = string(userpath) + "\\AppData\\Local\\BedrockTerminal\\" + DATAFILE;
+		path = string(userpath) + "\\AppData\\Local\\BedrockUtilities\\" + DATAFILE;
 	}
 	return path;
 }

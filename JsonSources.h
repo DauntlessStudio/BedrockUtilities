@@ -24,4 +24,7 @@ namespace JsonSources
 
 	auto rp_terrain_tex = nlohmann::ordered_json::parse(R"({ "num_mip_levels" : 4, "padding" : 8, "resource_pack_name" : "vanilla", "texture_data" : { }, "texture_name" : "atlas.terrain" })");
 	auto rp_item_tex = nlohmann::ordered_json::parse(R"({ "texture_name": "atlas.items", "texture_data": { } })");
+
+	auto manifest = nlohmann::ordered_json::parse(R"({ "format_version": 2, "header": { "name": "pack.name", "description": "pack.description", "uuid": "f6ea3ae7-0a42-467f-9417-b1aa43f38154", "version": [ 1, 0, 0 ], "min_engine_version": [ 1, 16, 200 ] }, "modules": [ { "type": "data", "uuid": "7202dc69-64dd-4897-8830-7b09be642587", "version": [ 1, 0, 0 ] } ] })");
+	auto sub_manifest = nlohmann::ordered_json::parse(R"({ "type": "resources", "uuid": "69b0b111-b7f0-424b-8ca2-4c9899a18fb8", "version": [ 1, 0, 0 ] })");
 }

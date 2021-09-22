@@ -36,6 +36,10 @@ void show_usage(string command) {
         cout << prog_name << " [<options>] nitm" << endl;
         cout << "options:\n  [-i <indent>] Indent, sets the output file's indent level. Defaults to 2" << endl;
         break;
+    case eNMAN:
+        cout << prog_name << " nman" << endl;
+        cout << "no options." << endl;
+        break;
     case eNBLK:
         cout << prog_name << " [<options>] nblk" << endl;
         cout << "options:\n  [-i <indent>] Indent, sets the output file's indent level. Defaults to 2" << endl;
@@ -58,10 +62,11 @@ void show_usage(string command) {
         cout << "  comp          Add new components" << endl;
         cout << "  nent          Create new entity" << endl;
         cout << "  nitm          Create new item" << endl;
+        cout << "  nman          Create new resource/behavior packs" << endl;
         cout << "  nblk          Create new block" << endl;
         cout << "  func          Create new functions" << endl;
-        cout << "  afunc         Create new animation controller function" << endl << endl;
-        cout << "'" << prog_name << " -h <command>' for more information" << endl;
+        cout << "  afunc         Create new animation controller function" << endl;
+        cout << endl << "'" << prog_name << " -h <command>' for more information" << endl;
         break;
     }
 }
@@ -73,6 +78,7 @@ void init_command_list() {
     mapCommandList["comp"] = eCOMP;
     mapCommandList["nent"] = eNENT;
     mapCommandList["nitm"] = eNITM;
+    mapCommandList["nman"] = eNMAN;
     mapCommandList["nblk"] = eNBLK;
     mapCommandList["func"] = eFUNC;
     mapCommandList["afunc"] = eAFUNC;
@@ -469,6 +475,44 @@ int create_anim_function(string name)
     return 0;
 }
 
+int create_manifest()
+{
+    string bp_name;
+    cout << "Behavior Pack Name:" << endl;
+    getline(cin, bp_name);
+
+    size_t index = user_data.behavior_path.find_last_of(SLASH);
+    string bp_path = user_data.behavior_path.substr(0, index) + SLASH + bp_name + "/";
+
+    string rp_name;
+    cout << "Resource Pack Name:" << endl;
+    getline(cin, rp_name);
+
+    index = user_data.resource_path.find_last_of(SLASH);
+    string rp_path = user_data.resource_path.substr(0, index) + SLASH + rp_name + "/";
+
+    nlohmann::ordered_json manifest = JsonSources::manifest;
+    nlohmann::ordered_json sub_manifest = JsonSources::sub_manifest;
+
+    manifest["header"]["uuid"] = uuid::generate_uuid_v4();
+    sub_manifest["uuid"] = uuid::generate_uuid_v4();
+    manifest["modules"] = json::array({ sub_manifest });
+
+    write_json_to_file(manifest, bp_path + "manifest.json");
+    overwrite_txt_file(bp_path + "texts/en_US.lang", "## BEHAVIOR PACK MANIFEST =======================================================\npack.name=" + bp_name + "\npack.description=This behavior pack is required for " + bp_name + " to run properly");
+    write_json_to_file(json({"en_US"}), bp_path + "/texts/languages.json");
+
+    manifest["header"]["uuid"] = uuid::generate_uuid_v4();
+    sub_manifest["uuid"] = uuid::generate_uuid_v4();
+    manifest["modules"] = json::array({ sub_manifest });
+
+    write_json_to_file(manifest, rp_path + "manifest.json");
+    overwrite_txt_file(rp_path + "/texts/en_US.lang", "## RESOURCE PACK MANIFEST =======================================================\npack.name=" + rp_name + "\npack.description=This behavior pack is required for " + rp_name + " to run properly");
+    write_json_to_file(json({ "en_US" }), rp_path + "/texts/languages.json");
+
+    return 0;
+}
+
 int main(int argc, char** argv) {
     prog_name = argv[0];
 
@@ -548,6 +592,9 @@ int main(int argc, char** argv) {
             break;
         case eAFUNC:
             create_anim_function(name);
+            break;
+        case eNMAN:
+            create_manifest();
             break;
         default:
             show_usage("help");
