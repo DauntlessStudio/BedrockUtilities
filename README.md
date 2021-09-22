@@ -16,7 +16,6 @@
 *** https://www.markdownguide.org/basic-syntax/#reference-style-links
 -->
 [![Contributors][contributors-shield]][contributors-url]
-[![Forks][forks-shield]][forks-url]
 [![Issues][issues-shield]][issues-url]
 [![MIT License][license-shield]][license-url]
 
@@ -25,15 +24,9 @@
 <!-- PROJECT LOGO -->
 <br />
 <p align="center">
-  <a href="https://github.com/DauntlessStudio/BedrockUtilities>
-
+  <a href="https://github.com/DauntlessStudio/BedrockUtilities">
   </a>
-
   <h3 align="center">Utilities For Bedrock Development</h3>
-
-  <p align="center">
-    Tools for speeding up your development process
-  </p>
 </p>
 
 
@@ -51,13 +44,11 @@
     <li>
       <a href="#getting-started">Getting Started</a>
       <ul>
-        <li><a href="#prerequisites">Prerequisites</a></li>
         <li><a href="#installation">Installation</a></li>
       </ul>
     </li>
     <li><a href="#usage">Usage</a></li>
     <li><a href="#roadmap">Roadmap</a></li>
-    <li><a href="#contributing">Contributing</a></li>
     <li><a href="#license">License</a></li>
     <li><a href="#contact">Contact</a></li>
     <li><a href="#acknowledgements">Acknowledgements</a></li>
@@ -92,12 +83,12 @@ You can either compile the project from source, or use the installer.
    ```sh
    git clone https://github.com/DauntlessStudio/BedrockUtilities.git
    ```
-2. Compile
+2. Compile\n
    Use Compiler of your choice to generate an executeable. On Linux you can use the makefile.
-3. Set In Path
+3. Set In Path\n
    Windows: %USERPROFILE%/AppData/Local/BedrockUtilities/
    Linux: /usr/bin/
-4. (Optional, Windows) Set Environment Variable
+4. (Optional, Windows) Set Environment Variable\n
    Run 'Edit the system environment variables'.
    Go to Advanced>Environment Variables>System Variables>Path
    Press 'Edit...' then 'New' and paste in:
@@ -106,11 +97,11 @@ You can either compile the project from source, or use the installer.
    ```
 
 ### Using Installer
-1. Install
+1. Install\n
    Run 'setup.exe'
-2. (Optional) Set Environment Variable
-   Run 'Edit the system environment variables'.
-   Go to Advanced>Environment Variables>System Variables>Path
+2. (Optional) Set Environment Variable\n
+   Run 'Edit the system environment variables'.\n
+   Go to Advanced>Environment Variables>System Variables>Path\n
    Press 'Edit...' then 'New' and paste in:
    ```sh
    %USERPROFILE%\\AppData\\Local\\BedrockUtilities
@@ -174,7 +165,7 @@ Project Link: [https://github.com/DauntlessStudio/BedrockUtilities](https://gith
 ## Acknowledgements
 * [JSON For Modern c++](https://github.com/nlohmann/json)
 * [Lodepng](https://github.com/lvandeve/lodepng)
-
+* [Img Shields](https://shields.io)
 
 
 
@@ -183,9 +174,7 @@ Project Link: [https://github.com/DauntlessStudio/BedrockUtilities](https://gith
 <!-- https://www.markdownguide.org/basic-syntax/#reference-style-links -->
 [contributors-shield]: https://img.shields.io/github/contributors/DauntlessStudio/BedrockUtilities.svg?style=for-the-badge
 [contributors-url]: https://github.com/DauntlessStudio/BedrockUtilities/graphs/contributors
-[forks-shield]: https://img.shields.io/github/forks/DauntlessStudio/BedrockUtilities.svg?style=for-the-badge
-[stars-url]: https://github.com/DauntlessStudio/BedrockUtilities/stargazers
 [issues-shield]: https://img.shields.io/github/issues/DauntlessStudio/BedrockUtilities.svg?style=for-the-badge
 [issues-url]: https://github.com/DauntlessStudio/BedrockUtilities/issues
 [license-shield]: https://img.shields.io/github/license/DauntlessStudio/BedrockUtilities.svg?style=for-the-badge
-[linkedin-url]: https://linkedin.com/in/othneildrew
+[license-url]: https://github.com/othneildrew/DauntlessStudio/BedrockUtilities/master/LICENSE.txt
