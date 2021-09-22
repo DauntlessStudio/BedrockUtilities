@@ -17,8 +17,6 @@
 -->
 [![Contributors][contributors-shield]][contributors-url]
 [![Issues][issues-shield]][issues-url]
-[![Forks][forks-shield]][forks-url]
-[![Stargazers][stars-shield]][stars-url]
 [![MIT License][license-shield]][license-url]
 
 
@@ -181,5 +179,5 @@ Project Link: [https://github.com/DauntlessStudio/BedrockUtilities](https://gith
 [stars-url]: https://github.com/DauntlessStudio/BedrockUtilities/stargazers
 [issues-shield]: https://img.shields.io/github/issues/DauntlessStudio/BedrockUtilities.svg?style=for-the-badge
 [issues-url]: https://github.com/DauntlessStudio/BedrockUtilities/issues
-[license-shield]: https://img.shields.io/github/license/DauntlessStudio/BedrockUtilities.svg?style=for-the-badge
+[license-shield]: https://img.shields.io/badge/LICENSE-MIT-brightgreen?style=for-the-badge
 [license-url]: https://github.com/othneildrew/DauntlessStudio/BedrockUtilities/master/LICENSE.txt
