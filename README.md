@@ -83,12 +83,12 @@ You can either compile the project from source, or use the installer.
    ```sh
    git clone https://github.com/DauntlessStudio/BedrockUtilities.git
    ```
-2. Compile\n
+2. Compile  
    Use Compiler of your choice to generate an executeable. On Linux you can use the makefile.
-3. Set In Path\n
+3. Set In Path  
    Windows: %USERPROFILE%/AppData/Local/BedrockUtilities/
    Linux: /usr/bin/
-4. (Optional, Windows) Set Environment Variable\n
+4. (Optional, Windows) Set Environment Variable  
    Run 'Edit the system environment variables'.
    Go to Advanced>Environment Variables>System Variables>Path
    Press 'Edit...' then 'New' and paste in:
@@ -97,11 +97,11 @@ You can either compile the project from source, or use the installer.
    ```
 
 ### Using Installer
-1. Install\n
+1. Install  
    Run 'setup.exe'
-2. (Optional) Set Environment Variable\n
-   Run 'Edit the system environment variables'.\n
-   Go to Advanced>Environment Variables>System Variables>Path\n
+2. (Optional) Set Environment Variable  
+   Run 'Edit the system environment variables'.  
+   Go to Advanced>Environment Variables>System Variables>Path  
    Press 'Edit...' then 'New' and paste in:
    ```sh
    %USERPROFILE%\\AppData\\Local\\BedrockUtilities
