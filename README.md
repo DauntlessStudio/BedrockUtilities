@@ -20,7 +20,6 @@
 [![MIT License][license-shield]][license-url]
 
 
-
 <!-- PROJECT LOGO -->
 <br />
 <p align="center">
@@ -93,7 +92,7 @@ You can either compile the project from source, or use the installer.
    Go to Advanced>Environment Variables>System Variables>Path
    Press 'Edit...' then 'New' and paste in:
    ```sh
-   %USERPROFILE%\\AppData\\Local\\BedrockUtilities
+   %USERPROFILE%\AppData\Local\BedrockUtilities
    ```
 
 ### Using Installer
@@ -104,7 +103,7 @@ You can either compile the project from source, or use the installer.
    Go to Advanced>Environment Variables>System Variables>Path  
    Press 'Edit...' then 'New' and paste in:
    ```sh
-   %USERPROFILE%\\AppData\\Local\\BedrockUtilities
+   %USERPROFILE%\AppData\Local\BedrockUtilities
    ```
 
 <!-- USAGE EXAMPLES -->
