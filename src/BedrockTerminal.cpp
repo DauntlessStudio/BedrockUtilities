@@ -620,7 +620,7 @@ int create_manifest()
     manifest["modules"] = json::array({ sub_manifest });
 
     write_json_to_file(manifest, rp_path + "manifest.json");
-    overwrite_txt_file(rp_path + "/texts/en_US.lang", "## RESOURCE PACK MANIFEST =======================================================\npack.name=" + rp_name + "\npack.description=This behavior pack is required for " + rp_name + " to run properly");
+    overwrite_txt_file(rp_path + "/texts/en_US.lang", "## RESOURCE PACK MANIFEST =======================================================\npack.name=" + rp_name + "\npack.description=This resource pack is required for " + rp_name + " to run properly");
     write_json_to_file(json({ "en_US" }), rp_path + "/texts/languages.json");
 
     return 0;
