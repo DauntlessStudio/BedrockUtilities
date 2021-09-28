@@ -135,8 +135,12 @@ vector<bedrock::entity> get_bp_entities(string name, string family)
     vector<bedrock::entity> entities;
     if (!name.empty())
     {
-        bedrock::entity entity(user_data.behavior_path + "/entities/" + name + ".json");
-        entities.push_back(entity);
+        vector<string> names = get_substrings(name, ',');
+        for (const auto& file : names)
+        {
+            bedrock::entity entity(user_data.behavior_path + "/entities/" + file + ".json");
+            entities.push_back(entity);
+        }
     }
     else
     {

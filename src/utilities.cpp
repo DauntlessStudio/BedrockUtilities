@@ -53,3 +53,18 @@ string read_multiline_input()
     cin.clear();
     return multiline;
 }
+
+vector<string> get_substrings(const string& ref, const char& deliminator)
+{
+    vector<string> result;
+    stringstream s_stream(ref);
+
+    while (s_stream.good())
+    {
+        string substr;
+        getline(s_stream, substr, deliminator);
+        result.push_back(substr);
+    }
+
+    return result;
+}

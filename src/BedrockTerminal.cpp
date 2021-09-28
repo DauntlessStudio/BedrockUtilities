@@ -18,17 +18,17 @@ void show_usage(string command) {
         cout << prog_name << " [<options>] cogr" << endl;
         cout << "options:\n  [-i <indent>] Indent, sets the output file's indent level. Defaults to 2" << endl;
         cout << "  [-r] Remove, removes the component groups" << endl;
-        cout << "  [-n <filename>] Name, uses bp/entities/<filename>.json as the file to modify" << endl;
+        cout << "  [-n <filename>,<filename2>] Name, uses bp/entities/<filename>.json as the file to modify" << endl;
         cout << "  [-f <family>] Family, modifies all entities in bp/entities/ with the desired family type" << endl;
-        cout << "  Modifies all entites in bp/entities/ if [-n|-f] are not proided" << endl;
+        cout << "  Modifies all entites in bp/entities/ if [-n|-f] are not provided" << endl;
         break;
     case eCOMP:
         cout << prog_name << " [<options>] comp" << endl;
         cout << "options:\n  [-i <indent>] Indent, sets the output file's indent level. Defaults to 2" << endl;
         cout << "  [-r] Remove, removes the component groups" << endl;
-        cout << "  [-n <filename>] Name, uses bp/entities/<filename>.json as the file to modify" << endl;
+        cout << "  [-n <filename>,<filename2>] Name, uses bp/entities/<filename>.json as the file to modify" << endl;
         cout << "  [-f <family>] Family, modifies all entities in bp/entities/ with the desired family type" << endl;
-        cout << "  Modifies all entites in bp/entities/ if [-n|-f] are not proided" << endl;
+        cout << "  Modifies all entites in bp/entities/ if [-n|-f] are not provided" << endl;
         break;
     case eNENT:
         cout << prog_name << " [<options>] nent" << endl;
@@ -53,7 +53,7 @@ void show_usage(string command) {
         break;
     case eAFUNC:
         cout << prog_name << " [<options>] afunc" << endl;
-        cout << "options:\n  [-n <name>] Name, the name of the entity to create the animation controller for. Defaults to 'player'" << endl;
+        cout << "options:\n  [-n <name>,<name2>] Name, the name of the entity to create the animation controller for. Defaults to 'player'" << endl;
         break;
     default:
         cout << "usage: " << prog_name << " [<args>] <command>" << endl;
@@ -234,7 +234,7 @@ int remove_components(string family, string name, int spacing)
 
     cout << "Found " << entities.size() << " entities" << endl;
 
-    ordered_json components = read_json_from_input("New Components", "Invalid Json\nAborting...", true);
+    ordered_json components = read_json_from_input("Components to Remove", "Invalid Json\nAborting...", true);
 
     cout << "Removing Components" << endl;
 
@@ -543,7 +543,7 @@ int create_anim_function(string name)
 
     string func_name;
 
-    cout << "Function Name:" << endl;
+    cout << "Function Name (Use $ to insert [-n] value):" << endl;
     getline(cin, func_name);
 
     string query;
@@ -572,14 +572,22 @@ int create_anim_function(string name)
     // Remove Trailing \n
     function.erase(function.end() - 1);
     
-    overwrite_txt_file(user_data.behavior_path + "/functions/" + func_name + ".mcfunction", function);
+    vector<string> names = get_substrings(name, ',');
+    for (const auto& file : names)
+    {
+        string tmp_func_name = func_name;
+        replace_all(tmp_func_name, "$", file);
+        string tmp_func = function;
+        replace_all(tmp_func, "$", file);
+        overwrite_txt_file(user_data.behavior_path + "/functions/" + tmp_func_name + ".mcfunction", tmp_func);
 
-    bedrock::entity entity(user_data.behavior_path + "/entities/" + name + ".json");
+        bedrock::entity entity(user_data.behavior_path + "/entities/" + file + ".json");
 
-    string write_func = func_name;
-    replace_all(write_func, "/", ".");
-    entity.add_animation_controller(write_func, query, exit_query, "/function " + func_name);
-    write_json_to_file(entity.entity_json, user_data.behavior_path + "/entities/" + name + ".json", 2);
+        string write_func = tmp_func_name;
+        replace_all(write_func, "/", ".");
+        entity.add_animation_controller(write_func, query, exit_query, "/function " + func_name);
+        write_json_to_file(entity.entity_json, user_data.behavior_path + "/entities/" + file + ".json", 2);
+    }
 
     return 0;
 }
@@ -650,7 +658,7 @@ int main(int argc, char** argv) {
     int indent = 2;
     int count = 64;
 
-    while ((opt = bed_getopt(argc, argv, "i:d:f:n:c:hr")) != -1) {
+    while ((opt = bed_getopt(argc, argv, "i:d:f:n:c:rh")) != -1) {
         switch (opt) {
             case 'd':
                 bUseSource = false;
