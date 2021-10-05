@@ -55,6 +55,10 @@ void show_usage(string command) {
         cout << prog_name << " [<options>] afunc" << endl;
         cout << "options:\n  [-n <name>,<name2>] Name, the name of the entity to create the animation controller for. Defaults to 'player'" << endl;
         break;
+    case eACFUNC:
+        cout << prog_name << " [<options>] acfunc" << endl;
+        cout << "options:\n  [-n <name>,<name2>] Name, the name of the entity to create the animation for. Defaults to 'player'" << endl;
+        break;
     default:
         cout << "usage: " << prog_name << " [<args>] <command>" << endl;
         cout << "command list:" << endl;
@@ -67,7 +71,8 @@ void show_usage(string command) {
         cout << "  nman          Create new resource/behavior packs" << endl;
         cout << "  nblk          Create new block" << endl;
         cout << "  func          Create new functions" << endl;
-        cout << "  afunc         Create new animation controller function" << endl;
+        cout << "  afunc         Create new animation function" << endl;
+        cout << "  acfunc        Create new animation controller function" << endl;
         cout << endl << "'" << prog_name << " -h <command>' for more information" << endl;
         break;
     }
@@ -84,6 +89,7 @@ void init_command_list() {
     mapCommandList["nblk"] = eNBLK;
     mapCommandList["func"] = eFUNC;
     mapCommandList["afunc"] = eAFUNC;
+    mapCommandList["acfunc"] = eACFUNC;
 }
 
 int create_component_group(string family, string name, int spacing) 
@@ -306,8 +312,6 @@ int create_new_entity(int spacing)
     entity["minecraft:entity"]["description"]["identifier"] = input;
     write_json_to_file(entity, user_data.behavior_path + "/entities/" + name + ".json", spacing);
 
-    if(entity_type == 'd') return 0;
-
     char confirm;
     cout << "Create Resource Pack Files? [y/n]" << endl;
     cin >> confirm;
@@ -525,7 +529,7 @@ int create_batch_funcs(int count, string name)
     cout << "Function: (use $ to represent the function number)" << endl;
     string function = read_multiline_input();
 
-    for (int i = 1; i < count + 1; i++)
+    for (int i = 0; i < count + 1; i++)
     {
         string write = function;
         replace_all(write, "$", to_string(i));
@@ -535,7 +539,7 @@ int create_batch_funcs(int count, string name)
     return 0;
 }
 
-int create_anim_function(string name)
+int create_animation_controller_function(string name)
 {
     if (!user_data.valid_bp()) abort_program("Invalid Behavior Path at " + user_data.behavior_path + "\nAborting...");
 
@@ -583,9 +587,71 @@ int create_anim_function(string name)
 
         bedrock::entity entity(user_data.behavior_path + "/entities/" + file + ".json");
 
+        entity.add_animation_controller(tmp_func_name, query, exit_query, "/function " + tmp_func_name);
+        write_json_to_file(entity.entity_json, user_data.behavior_path + "/entities/" + file + ".json", 2);
+    }
+
+    return 0;
+}
+
+int create_animation_function(string name)
+{
+    if (!user_data.valid_bp()) abort_program("Invalid Behavior Path at " + user_data.behavior_path + "\nAborting...");
+
+    if (name.empty()) name = "player";
+
+    string func_name;
+
+    cout << "Function Name (Use $ to insert [-n] value):" << endl;
+    getline(cin, func_name);
+
+    string input;
+    float anim_length;
+    float timeline_entry;
+    bool should_loop;
+
+    cout << "Animation Length:" << endl;
+    getline(cin, input);
+    anim_length = stof(input);
+
+    cout << "Timeline Entry:" << endl;
+    getline(cin, input);
+    timeline_entry = stof(input);
+
+    cout << "Looping: [y/n]" << endl;
+    getline(cin, input);
+    should_loop = input == "Y" || input == "y";
+
+    string function;
+    cout << "Function:" << endl;
+
+    while (!cin.eof())
+    {
+        string line;
+        getline(cin, line);
+
+        if (cin.fail())
+            break;
+
+        function += line + '\n';
+    }
+
+    // Remove Trailing \n
+    function.erase(function.end() - 1);
+
+    vector<string> names = get_substrings(name, ',');
+    for (const auto& file : names)
+    {
+        string tmp_func_name = func_name;
+        replace_all(tmp_func_name, "$", file);
+        string tmp_func = function;
+        replace_all(tmp_func, "$", file);
+        overwrite_txt_file(user_data.behavior_path + "/functions/" + tmp_func_name + ".mcfunction", tmp_func);
+
+        bedrock::entity entity(user_data.behavior_path + "/entities/" + file + ".json");
+
         string write_func = tmp_func_name;
-        replace_all(write_func, "/", ".");
-        entity.add_animation_controller(write_func, query, exit_query, "/function " + func_name);
+        entity.add_animation(write_func, anim_length, timeline_entry, should_loop);
         write_json_to_file(entity.entity_json, user_data.behavior_path + "/entities/" + file + ".json", 2);
     }
 
@@ -615,6 +681,7 @@ int create_manifest()
 
     manifest["header"]["uuid"] = uuid::generate_uuid_v4();
     sub_manifest["uuid"] = uuid::generate_uuid_v4();
+    sub_manifest["type"] = "data";
     manifest["modules"] = json::array({ sub_manifest });
 
     write_json_to_file(manifest, bp_path + "manifest.json");
@@ -735,8 +802,11 @@ int main(int argc, char** argv) {
         case eFUNC:
             create_batch_funcs(count, name);
             break;
+        case eACFUNC:
+            create_animation_controller_function(name);
+            break;
         case eAFUNC:
-            create_anim_function(name);
+            create_animation_function(name);
             break;
         case eNMAN:
             create_manifest();

@@ -117,9 +117,12 @@ void entity::add_animation_controller(const string anim_name, const string query
     string full_name = entity_json["minecraft:entity"]["description"]["identifier"];
     size_t index = full_name.find(':') + 1;
     string name = full_name.substr(index, full_name.length() - index);
+    string anim_title_name = anim_name;
+    replace_all(anim_title_name, "/", ".");
+    replace_all(anim_title_name, name + ".", "");
 
-    entity_json["minecraft:entity"]["description"]["animations"].merge_patch(json({ {anim_name, "controller.animation." + name + "." + anim_name} }));
-    entity_json["minecraft:entity"]["description"]["scripts"]["animate"].push_back(anim_name);
+    entity_json["minecraft:entity"]["description"]["animations"].merge_patch(json({ {anim_title_name, "controller.animation." + name + "." + anim_title_name} }));
+    entity_json["minecraft:entity"]["description"]["scripts"]["animate"].push_back(anim_title_name);
 
     ordered_json animation_controller = nlohmann::ordered_json::parse(R"({"format_version": "1.10.0", "animation_controllers": {}})");
 
@@ -132,7 +135,35 @@ void entity::add_animation_controller(const string anim_name, const string query
     string val[] = { entry_line };
     controller["states"]["effect"]["on_entry"] = val;
 
-    animation_controller["animation_controllers"]["controller.animation." + name + "." + anim_name] = controller;
+    animation_controller["animation_controllers"]["controller.animation." + name + "." + anim_title_name] = controller;
     write_json_to_file(animation_controller, user_data.behavior_path + "/animation_controllers/" + name + ".animation_controller.json", 2);
+    return;
+}
+
+void entity::add_animation(const string& anim_name, const float& anim_length, const float& time_entry, const bool& should_loop)
+{
+    make_directory(user_data.behavior_path + "/animation_controllers/");
+    string full_name = entity_json["minecraft:entity"]["description"]["identifier"];
+    size_t index = full_name.find(':') + 1;
+    string name = full_name.substr(index, full_name.length() - index);
+    string anim_title_name = anim_name;
+    replace_all(anim_title_name, "/", ".");
+    replace_all(anim_title_name, name + ".", "");
+
+    entity_json["minecraft:entity"]["description"]["animations"].merge_patch(json({ {anim_title_name, "animation." + name + "." + anim_title_name} }));
+    entity_json["minecraft:entity"]["description"]["scripts"]["animate"].push_back(anim_title_name);
+
+    ordered_json animation = nlohmann::ordered_json::parse(R"({"format_version": "1.10.0", "animations": {}})");
+
+    read_json_from_file(animation, user_data.behavior_path + "/animations/" + name + ".json", "Creating Animation...");
+
+    ordered_json anim;
+    anim["animation_length"] = anim_length;
+    anim["loop"] = should_loop;
+    string funcs[1] = {"/function " + anim_name};
+    anim["timeline"] = nlohmann::ordered_json({ {to_string(time_entry), funcs} });
+
+    animation["animations"]["animation." + name + "." + anim_title_name] = anim;
+    write_json_to_file(animation, user_data.behavior_path + "/animations/" + name + ".json", 2);
     return;
 }
