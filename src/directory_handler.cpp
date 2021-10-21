@@ -137,6 +137,14 @@ string get_path()
 	return path;
 }
 
+string get_working_directory()
+{
+	char buffer[PATH_MAX];
+	getcwd(buffer, sizeof(buffer));
+	string path = buffer;
+	return path;
+}
+
 int make_directory(const string path)
 {
 	size_t index = path.find_last_of('/');
