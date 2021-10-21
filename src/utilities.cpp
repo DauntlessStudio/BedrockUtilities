@@ -54,6 +54,21 @@ string read_multiline_input()
     return multiline;
 }
 
+string space_camel_case(const string& ref)
+{
+    string value;
+    for (size_t i = 0; i < ref.length(); i++)
+    {
+        if (ref[i] >= 'A' && ref[i] <= 'Z' && i > 0)
+        {
+            value += " ";
+        }
+
+        value += ref[i];
+    }
+    return value;
+}
+
 vector<string> get_substrings(const string& ref, const char& deliminator)
 {
     vector<string> result;
@@ -67,4 +82,10 @@ vector<string> get_substrings(const string& ref, const char& deliminator)
     }
 
     return result;
+}
+
+float round_second(float var)
+{
+    float value = (int)(var * 100 + .5);
+    return (float)value / 100;
 }

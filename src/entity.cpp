@@ -111,7 +111,7 @@ void entity::remove_groups_from_entity(const json& groups)
     return;
 }
 
-void entity::add_animation_controller(const string anim_name, const string query, const string exit_query, const string entry_line)
+void entity::add_animation_controller(const string& anim_name, const string& query, const string& exit_query, const vector<string>& entry_line)
 {
     make_directory(user_data.behavior_path + "/animation_controllers/");
     string full_name = entity_json["minecraft:entity"]["description"]["identifier"];
@@ -130,17 +130,19 @@ void entity::add_animation_controller(const string anim_name, const string query
 
     ordered_json controller;
     controller["states"]["default"]["transitions"] = json::array({ json({{ "effect", query }}) });
-    controller["states"]["effect"]["transitions"] = json::array({ json({{"default", exit_query}}) });
+    if (!exit_query.empty())
+    {
+        controller["states"]["effect"]["transitions"] = json::array({ json({{"default", exit_query}}) });
+    }
 
-    string val[] = { entry_line };
-    controller["states"]["effect"]["on_entry"] = val;
+    controller["states"]["effect"]["on_entry"] = entry_line;
 
     animation_controller["animation_controllers"]["controller.animation." + name + "." + anim_title_name] = controller;
     write_json_to_file(animation_controller, user_data.behavior_path + "/animation_controllers/" + name + ".animation_controller.json", 2);
     return;
 }
 
-void entity::add_animation(const string& anim_name, const float& anim_length, const float& time_entry, const bool& should_loop)
+void entity::add_animation(const string& anim_name, const float& anim_length, const float& time_entry, const bool& should_loop, const vector<string>& commands)
 {
     make_directory(user_data.behavior_path + "/animation_controllers/");
     string full_name = entity_json["minecraft:entity"]["description"]["identifier"];
@@ -160,8 +162,7 @@ void entity::add_animation(const string& anim_name, const float& anim_length, co
     ordered_json anim;
     anim["animation_length"] = anim_length;
     anim["loop"] = should_loop;
-    string funcs[1] = {"/function " + anim_name};
-    anim["timeline"] = nlohmann::ordered_json({ {to_string(time_entry), funcs} });
+    anim["timeline"] = nlohmann::ordered_json({ {to_string(time_entry), commands} });
 
     animation["animations"]["animation." + name + "." + anim_title_name] = anim;
     write_json_to_file(animation, user_data.behavior_path + "/animations/" + name + ".json", 2);

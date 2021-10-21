@@ -20,7 +20,10 @@ int create_new_entity(int spacing);
 int create_new_item(int spacing, int stack_size);
 int create_batch_funcs(int count, string name);
 int create_animation_controller_function(string name);
+int create_animation_controller_internal(string name);
 int create_animation_function(string name);
+int create_animation_internal(string name);
+int create_skin_pack(string name);
 int create_manifest();
 int abort_program(string message);
 
@@ -37,7 +40,8 @@ enum CommandList
     eNBLK,
     eFUNC,
     eAFUNC,
-    eACFUNC
+    eACFUNC,
+    eSKIN
 };
 
 const char* prog_name;

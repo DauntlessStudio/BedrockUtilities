@@ -40,6 +40,11 @@ string get_path()
 	return path;
 }
 
+string get_working_directory()
+{
+	return std::filesystem::current_path().string();
+}
+
 int write_resource_dir(bool bUseSource, string arg)
 {
 	cout << "Write Path" << endl;

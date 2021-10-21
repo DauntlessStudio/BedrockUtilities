@@ -54,10 +54,16 @@ void show_usage(string command) {
     case eAFUNC:
         cout << prog_name << " [<options>] afunc" << endl;
         cout << "options:\n  [-n <name>,<name2>] Name, the name of the entity to create the animation controller for. Defaults to 'player'" << endl;
+        cout << "  [-f] Function, creates a new function and references it. Otherwise creates entries in the animation file directly" << endl;
         break;
     case eACFUNC:
         cout << prog_name << " [<options>] acfunc" << endl;
         cout << "options:\n  [-n <name>,<name2>] Name, the name of the entity to create the animation for. Defaults to 'player'" << endl;
+        cout << "  [-f] Function, creates a new function and references it. Otherwise creates entries in the animation controller directly" << endl;
+        break;
+    case eSKIN:
+        cout << prog_name << " [<options>] skin" << endl;
+        cout << "options:\n  [-n <name>] Name, the name of the skin pack, in camel case'" << endl;
         break;
     default:
         cout << "usage: " << prog_name << " [<args>] <command>" << endl;
@@ -73,6 +79,7 @@ void show_usage(string command) {
         cout << "  func          Create new functions" << endl;
         cout << "  afunc         Create new animation function" << endl;
         cout << "  acfunc        Create new animation controller function" << endl;
+        cout << "  skin          Create new skin pack with the files in the working directory" << endl;
         cout << endl << "'" << prog_name << " -h <command>' for more information" << endl;
         break;
     }
@@ -90,6 +97,7 @@ void init_command_list() {
     mapCommandList["func"] = eFUNC;
     mapCommandList["afunc"] = eAFUNC;
     mapCommandList["acfunc"] = eACFUNC;
+    mapCommandList["skin"] = eSKIN;
 }
 
 int create_component_group(string family, string name, int spacing) 
@@ -377,13 +385,13 @@ int create_new_item(int spacing, int stack_size)
         break;
     case 'e':
         item = JsonSources::bp_effect_item;
-        player.add_animation_controller(name, "query.get_equipped_item_name == '" + name + "' && query.is_using_item", "!query.is_using_item", "/function " + name);
+        player.add_animation_controller(name, "query.get_equipped_item_name == '" + name + "' && query.is_using_item", "!query.is_using_item", vector<string> {"/function " + name});
         write_json_to_file(player.entity_json, user_data.behavior_path + "/entities/player.json", spacing);
         overwrite_txt_file(user_data.behavior_path + "/functions/" + name + ".mcfunction", "say " + name);
         break;
     case 'p':
         item = JsonSources::bp_effect_item;
-        player.add_animation_controller(name, "query.get_equipped_item_name == '" + name + "' && query.is_using_item", "!query.is_using_item", "/event entity @s " + input);
+        player.add_animation_controller(name, "query.get_equipped_item_name == '" + name + "' && query.is_using_item", "!query.is_using_item", vector<string> {"/event entity @s " + input});
         projectile_group[input] = JsonSources::bp_spawn_snowball;
         player.add_groups_to_entity(projectile_group);
         write_json_to_file(player.entity_json, user_data.behavior_path + "/entities/player.json", spacing);
@@ -426,11 +434,8 @@ int create_new_item(int spacing, int stack_size)
     write_json_to_file(item_rp, user_data.resource_path + "/items/" + name + ".json", spacing);
 
     // Modify item_texture.json
-    ifstream i;
-    i.open(user_data.resource_path + "/textures/item_texture.json");
     nlohmann::ordered_json item_texture;
-    i >> item_texture;
-    i.close();
+    read_json_from_file(item_texture, user_data.resource_path + "/textures/item_texture.json", "Invalid texture.json");
     json texture_entry;
     texture_entry[name]["textures"] = "textures/items/" + name;
     item_texture["texture_data"].merge_patch(texture_entry);
@@ -493,11 +498,8 @@ int create_new_block(int spacing)
     
 
     // Modify terrain_texture.json
-    ifstream i;
-    i.open(user_data.resource_path + "/textures/terrain_texture.json");
     nlohmann::ordered_json terrain_texture;
-    i >> terrain_texture;
-    i.close();
+    read_json_from_file(terrain_texture, user_data.resource_path + "/textures/terrain_texture.json", "Creating Terrain Texture");
     if(terrain_texture.is_null()) terrain_texture = JsonSources::rp_terrain_tex;
     json texture_entry;
     texture_entry[name]["textures"] = "textures/blocks/" + name;
@@ -505,9 +507,8 @@ int create_new_block(int spacing)
     write_json_to_file(terrain_texture, user_data.resource_path + "/textures/terrain_texture.json", 2);
 
     // Modify blocks.json
-    i.open(user_data.resource_path + "/blocks.json");
     nlohmann::ordered_json blocks;
-    i >> blocks;
+    read_json_from_file(blocks, user_data.resource_path + "/blocks.json", "Creating blocks.json");
     json block_entry;
     block_entry[input]["sound"] = "stone";
     block_entry[input]["textures"] = name;
@@ -539,6 +540,7 @@ int create_batch_funcs(int count, string name)
     return 0;
 }
 
+//Unify these function/internals to be one function
 int create_animation_controller_function(string name)
 {
     if (!user_data.valid_bp()) abort_program("Invalid Behavior Path at " + user_data.behavior_path + "\nAborting...");
@@ -587,7 +589,57 @@ int create_animation_controller_function(string name)
 
         bedrock::entity entity(user_data.behavior_path + "/entities/" + file + ".json");
 
-        entity.add_animation_controller(tmp_func_name, query, exit_query, "/function " + tmp_func_name);
+        entity.add_animation_controller(tmp_func_name, query, exit_query, vector<string> {"/function " + tmp_func_name});
+        write_json_to_file(entity.entity_json, user_data.behavior_path + "/entities/" + file + ".json", 2);
+    }
+
+    return 0;
+}
+
+int create_animation_controller_internal(string name)
+{
+    if (!user_data.valid_bp()) abort_program("Invalid Behavior Path at " + user_data.behavior_path + "\nAborting...");
+
+    if (name.empty()) name = "player";
+
+    string func_name;
+
+    cout << "Controller Name:" << endl;
+    getline(cin, func_name);
+
+    string query;
+    string exit_query;
+
+    cout << "Query:" << endl;
+    getline(cin, query);
+
+    cout << "Exit Query:" << endl;
+    getline(cin, exit_query);
+
+    string function;
+    cout << "Commands:" << endl;
+
+    vector<string> commands;
+    while (!cin.eof())
+    {
+        string line;
+        getline(cin, line);
+
+        if (cin.fail())
+            break;
+
+        commands.push_back(line);
+    }
+
+    vector<string> names = get_substrings(name, ',');
+    for (const auto& file : names)
+    {
+        string tmp_func_name = func_name;
+        string tmp_func = function;
+
+        bedrock::entity entity(user_data.behavior_path + "/entities/" + file + ".json");
+
+        entity.add_animation_controller(tmp_func_name, query, exit_query, commands);
         write_json_to_file(entity.entity_json, user_data.behavior_path + "/entities/" + file + ".json", 2);
     }
 
@@ -612,11 +664,11 @@ int create_animation_function(string name)
 
     cout << "Animation Length:" << endl;
     getline(cin, input);
-    anim_length = stof(input);
+    anim_length = round_second(stof(input));
 
     cout << "Timeline Entry:" << endl;
     getline(cin, input);
-    timeline_entry = stof(input);
+    timeline_entry = round_second(stof(input));
 
     cout << "Looping: [y/n]" << endl;
     getline(cin, input);
@@ -651,10 +703,122 @@ int create_animation_function(string name)
         bedrock::entity entity(user_data.behavior_path + "/entities/" + file + ".json");
 
         string write_func = tmp_func_name;
-        entity.add_animation(write_func, anim_length, timeline_entry, should_loop);
+        entity.add_animation(write_func, anim_length, timeline_entry, should_loop, vector<string> {"/function " + tmp_func_name});
         write_json_to_file(entity.entity_json, user_data.behavior_path + "/entities/" + file + ".json", 2);
     }
 
+    return 0;
+}
+
+int create_animation_internal(string name)
+{
+    if (!user_data.valid_bp()) abort_program("Invalid Behavior Path at " + user_data.behavior_path + "\nAborting...");
+
+    if (name.empty()) name = "player";
+
+    string func_name;
+
+    cout << "Animation Name:" << endl;
+    getline(cin, func_name);
+
+    string input;
+    float anim_length;
+    float timeline_entry;
+    bool should_loop;
+
+    cout << "Animation Length:" << endl;
+    getline(cin, input);
+    anim_length = round_second(stof(input));
+
+    cout << "Timeline Entry:" << endl;
+    getline(cin, input);
+    timeline_entry = round_second(stof(input));
+
+    cout << "Looping: [y/n]" << endl;
+    getline(cin, input);
+    should_loop = input == "Y" || input == "y";
+
+    string function;
+    cout << "Function:" << endl;
+    vector<string> commands;
+
+    while (!cin.eof())
+    {
+        string line;
+        getline(cin, line);
+
+        if (cin.fail())
+            break;
+
+        commands.push_back(line);
+    }
+
+    vector<string> names = get_substrings(name, ',');
+    for (const auto& file : names)
+    {
+        bedrock::entity entity(user_data.behavior_path + "/entities/" + file + ".json");
+
+        entity.add_animation(func_name, anim_length, timeline_entry, should_loop, commands);
+        write_json_to_file(entity.entity_json, user_data.behavior_path + "/entities/" + file + ".json", 2);
+    }
+
+    return 0;
+}
+
+int create_skin_pack(string name)
+{
+    // Create skins.json
+    vector<string> files = get_directory_files(get_working_directory() + "/", ".png");
+    vector<string> loc_names;
+    vector<ordered_json> skin_vect;
+    for (const auto& file : files)
+    {
+        string file_name = file.substr(file.find_last_of('/') + 1, file.length());
+        replace_all(file_name, ".png", "");
+        loc_names.push_back(file_name);
+
+        ordered_json skin;
+        skin["localization_name"] = file_name;
+        skin["geometry"] = file.find("Slim") != file.npos || file.find("slim") != file.npos ? "geometry.humanoid.customSlim" : "geometry.humanoid.custom";
+        skin["texture"] = file_name + ".png";
+        skin["type"] = "paid";
+
+        skin_vect.push_back(skin);
+    }
+
+    ordered_json skins;
+    skins["skins"] = skin_vect;
+    skins["serialization_name"] = name;
+    skins["localization_name"] = name;
+    write_json_to_file(skins, get_working_directory() + "/skins.json");
+
+    // Create manifest.json
+    ordered_json mod = { {"version", {1, 0, 0}}, {"type", "skin_pack"}, {"uuid", uuid::generate_uuid_v4()} };
+    ordered_json modules[] = {mod};
+    ordered_json header = { {"name", "pack.name"}, {"version", {1, 0, 0}}, {"uuid", uuid::generate_uuid_v4()} };
+    ordered_json manifest = { {"header", header}, {"modules", modules}, {"format_version", 1} };
+    write_json_to_file(manifest, get_working_directory() + "/manifest.json");
+
+    // Create languages.json
+    overwrite_txt_file(get_working_directory() + "/texts/languages.json", "[\n\"en_US\"\n]");
+
+    // Create en_US.lang
+    string lang = "skinpack." + name + "=" + space_camel_case(name) + "\n";
+    string prev_name;
+    for (const auto& skin_name : loc_names)
+    {
+        string format_name = skin_name.substr(0, skin_name.find_first_of('_'));
+        format_name[0] -= 32;
+
+        if (prev_name != format_name)
+        {
+            lang += "\n";
+            prev_name = format_name;
+        }
+
+        lang += "skin." + name + "." + skin_name + "=" + format_name + "\n";
+    }
+    overwrite_txt_file(get_working_directory() + "/texts/en_US.lang", lang);
     return 0;
 }
 
@@ -692,6 +856,7 @@ int create_manifest()
 
     manifest["header"]["uuid"] = uuid::generate_uuid_v4();
     sub_manifest["uuid"] = uuid::generate_uuid_v4();
+    sub_manifest["type"] = "resources";
     manifest["modules"] = json::array({ sub_manifest });
 
     write_json_to_file(manifest, rp_path + "manifest.json");
@@ -722,6 +887,7 @@ int main(int argc, char** argv) {
     bool bUseSource = true;
     bool show_help = false;
     bool remove = false;
+    bool function = false;
     int indent = 2;
     int count = 64;
 
@@ -733,6 +899,7 @@ int main(int argc, char** argv) {
                 break;
             case 'f':
                 family = bed_optarg;
+                function = true;
                 break;
             case 'n':
                 name = bed_optarg;
@@ -803,13 +970,30 @@ int main(int argc, char** argv) {
             create_batch_funcs(count, name);
             break;
         case eACFUNC:
-            create_animation_controller_function(name);
+            if (function)
+            {
+                create_animation_controller_function(name);
+            }
+            else
+            {
+                create_animation_controller_internal(name);
+            }
             break;
         case eAFUNC:
-            create_animation_function(name);
+            if (function)
+            {
+                create_animation_function(name);
+            }
+            else
+            {
+                create_animation_internal(name);
+            }
             break;
         case eNMAN:
             create_manifest();
+            break;
+        case eSKIN:
+            create_skin_pack(name);
             break;
         default:
             show_usage("help");
