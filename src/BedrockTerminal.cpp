@@ -1,4 +1,3 @@
-// BedrockTerminal.cpp : This file contains the 'main' function. Program execution begins and ends there.#include <iostream>
 #include "includes/BedrockTerminal.hpp"
 
 void show_usage(string command) {
@@ -54,12 +53,11 @@ void show_usage(string command) {
     case eAFUNC:
         cout << prog_name << " [<options>] afunc" << endl;
         cout << "options:\n  [-n <name>,<name2>] Name, the name of the entity to create the animation controller for. Defaults to 'player'" << endl;
-        cout << "  [-f] Function, creates a new function and references it. Otherwise creates entries in the animation file directly" << endl;
+        cout << "  [-q <query>] Query, uses the provided query in the entities animation" << endl;
         break;
     case eACFUNC:
         cout << prog_name << " [<options>] acfunc" << endl;
         cout << "options:\n  [-n <name>,<name2>] Name, the name of the entity to create the animation for. Defaults to 'player'" << endl;
-        cout << "  [-f] Function, creates a new function and references it. Otherwise creates entries in the animation controller directly" << endl;
         break;
     case eSKIN:
         cout << prog_name << " [<options>] skin" << endl;
@@ -540,63 +538,7 @@ int create_batch_funcs(int count, string name)
     return 0;
 }
 
-//Unify these function/internals to be one function
-int create_animation_controller_function(string name)
-{
-    if (!user_data.valid_bp()) abort_program("Invalid Behavior Path at " + user_data.behavior_path + "\nAborting...");
-
-    if (name.empty()) name = "player";
-
-    string func_name;
-
-    cout << "Function Name (Use $ to insert [-n] value):" << endl;
-    getline(cin, func_name);
-
-    string query;
-    string exit_query;
-
-    cout << "Query:" << endl;
-    getline(cin, query);
-
-    cout << "Exit Query:" << endl;
-    getline(cin, exit_query);
-
-    string function;
-    cout << "Function:" << endl;
-
-    while (!cin.eof())
-    {
-        string line;
-        getline(cin, line);
-
-        if (cin.fail())
-            break;
-
-        function += line + '\n';
-    }
-
-    // Remove Trailing \n
-    function.erase(function.end() - 1);
-    
-    vector<string> names = get_substrings(name, ',');
-    for (const auto& file : names)
-    {
-        string tmp_func_name = func_name;
-        replace_all(tmp_func_name, "$", file);
-        string tmp_func = function;
-        replace_all(tmp_func, "$", file);
-        overwrite_txt_file(user_data.behavior_path + "/functions/" + tmp_func_name + ".mcfunction", tmp_func);
-
-        bedrock::entity entity(user_data.behavior_path + "/entities/" + file + ".json");
-
-        entity.add_animation_controller(tmp_func_name, query, exit_query, vector<string> {"/function " + tmp_func_name});
-        write_json_to_file(entity.entity_json, user_data.behavior_path + "/entities/" + file + ".json", 2);
-    }
-
-    return 0;
-}
-
-int create_animation_controller_internal(string name)
+int create_animation_controller(string& name)
 {
     if (!user_data.valid_bp()) abort_program("Invalid Behavior Path at " + user_data.behavior_path + "\nAborting...");
 
@@ -643,74 +585,12 @@ int create_animation_controller_internal(string name)
         write_json_to_file(entity.entity_json, user_data.behavior_path + "/entities/" + file + ".json", 2);
     }
 
-    return 0;
-}
-
-int create_animation_function(string name)
-{
-    if (!user_data.valid_bp()) abort_program("Invalid Behavior Path at " + user_data.behavior_path + "\nAborting...");
-
-    if (name.empty()) name = "player";
-
-    string func_name;
-
-    cout << "Function Name (Use $ to insert [-n] value):" << endl;
-    getline(cin, func_name);
-
-    string input;
-    float anim_length;
-    float timeline_entry;
-    bool should_loop;
-
-    cout << "Animation Length:" << endl;
-    getline(cin, input);
-    anim_length = round_second(stof(input));
-
-    cout << "Timeline Entry:" << endl;
-    getline(cin, input);
-    timeline_entry = round_second(stof(input));
-
-    cout << "Looping: [y/n]" << endl;
-    getline(cin, input);
-    should_loop = input == "Y" || input == "y";
-
-    string function;
-    cout << "Function:" << endl;
-
-    while (!cin.eof())
-    {
-        string line;
-        getline(cin, line);
-
-        if (cin.fail())
-            break;
-
-        function += line + '\n';
-    }
-
-    // Remove Trailing \n
-    function.erase(function.end() - 1);
-
-    vector<string> names = get_substrings(name, ',');
-    for (const auto& file : names)
-    {
-        string tmp_func_name = func_name;
-        replace_all(tmp_func_name, "$", file);
-        string tmp_func = function;
-        replace_all(tmp_func, "$", file);
-        overwrite_txt_file(user_data.behavior_path + "/functions/" + tmp_func_name + ".mcfunction", tmp_func);
-
-        bedrock::entity entity(user_data.behavior_path + "/entities/" + file + ".json");
-
-        string write_func = tmp_func_name;
-        entity.add_animation(write_func, anim_length, timeline_entry, should_loop, vector<string> {"/function " + tmp_func_name});
-        write_json_to_file(entity.entity_json, user_data.behavior_path + "/entities/" + file + ".json", 2);
-    }
+    create_functions_from_strings(commands, names);
 
     return 0;
 }
 
-int create_animation_internal(string name)
+int create_animation(string& name, string& query)
 {
     if (!user_data.valid_bp()) abort_program("Invalid Behavior Path at " + user_data.behavior_path + "\nAborting...");
 
@@ -722,26 +602,20 @@ int create_animation_internal(string name)
     getline(cin, func_name);
 
     string input;
-    float anim_length;
-    float timeline_entry;
+    string anim_length;
+    map<string, vector<string>> timeline_entries;
     bool should_loop;
+    bool contains_function = false;
 
     cout << "Animation Length:" << endl;
     getline(cin, input);
-    anim_length = round_second(stof(input));
-
-    cout << "Timeline Entry:" << endl;
-    getline(cin, input);
-    timeline_entry = round_second(stof(input));
+    anim_length = input;
 
     cout << "Looping: [y/n]" << endl;
     getline(cin, input);
     should_loop = input == "Y" || input == "y";
 
-    string function;
-    cout << "Function:" << endl;
-    vector<string> commands;
-
+    cout << "Timeline Entries (#.#:command,command):" << endl;
     while (!cin.eof())
     {
         string line;
@@ -749,8 +623,13 @@ int create_animation_internal(string name)
 
         if (cin.fail())
             break;
+        if (!contains_function)
+            contains_function = line.find("function") != line.npos;
 
-        commands.push_back(line);
+        string time = line.substr(0, line.find(':'));
+        string command = line.substr(line.find(':') + 1, line.length());
+        vector<string> commands = get_substrings(command, ',');
+        timeline_entries.insert({time, commands});
     }
 
     vector<string> names = get_substrings(name, ',');
@@ -758,10 +637,62 @@ int create_animation_internal(string name)
     {
         bedrock::entity entity(user_data.behavior_path + "/entities/" + file + ".json");
 
-        entity.add_animation(func_name, anim_length, timeline_entry, should_loop, commands);
+        entity.add_animation(func_name, anim_length, timeline_entries, should_loop, query);
         write_json_to_file(entity.entity_json, user_data.behavior_path + "/entities/" + file + ".json", 2);
     }
 
+    // Create functions if needed
+    if (!contains_function)
+        return 0;
+
+    for (const auto& entry : timeline_entries)
+    {
+        create_functions_from_strings(entry.second, names);
+    }
+    return 0;
+}
+
+int create_functions_from_strings(const vector<string>& commands, const vector<string>& names)
+{
+    for (const auto& command : commands)
+    {
+        for (const auto& file : names)
+        {
+            string use_name = command;
+            replace_all(use_name, "$", file);
+
+            if (use_name.find("function") != command.npos && !valid_file(user_data.behavior_path + "/functions/" + use_name.substr(10)))
+            {
+                cout << "Function: \"" + use_name.substr(10) + "\" Does Not Exist" << endl << "Would You Like To Create It? (y/n)";
+                cin.clear();
+                fflush(stdin);
+                string input;
+                getline(cin, input);
+                if (input != "Y" && input != "y")
+                    continue;
+
+                string function;
+                cout << "Function:" << endl;
+                while (!cin.eof())
+                {
+                    string line;
+                    getline(cin, line);
+
+                    if (cin.fail())
+                        break;
+                    function += line + '\n';
+                }
+
+                // Remove Trailing \n
+                function.erase(function.end() - 1);
+
+                string use_function = function;
+                replace_all(use_function, "$", file);
+
+                overwrite_txt_file(user_data.behavior_path + "/functions/" + use_name.substr(10), use_function);
+            }
+        }
+    }
     return 0;
 }
 
@@ -883,15 +814,15 @@ int main(int argc, char** argv) {
     string dirArg;
     string family;
     string name;
+    string query;
     int opt;
     bool bUseSource = true;
     bool show_help = false;
     bool remove = false;
-    bool function = false;
     int indent = 2;
     int count = 64;
 
-    while ((opt = bed_getopt(argc, argv, "i:d:f:n:c:rh")) != -1) {
+    while ((opt = bed_getopt(argc, argv, "q:i:d:f:n:c:rh")) != -1) {
         switch (opt) {
             case 'd':
                 bUseSource = false;
@@ -899,7 +830,6 @@ int main(int argc, char** argv) {
                 break;
             case 'f':
                 family = bed_optarg;
-                function = true;
                 break;
             case 'n':
                 name = bed_optarg;
@@ -915,6 +845,9 @@ int main(int argc, char** argv) {
                 break;
             case 'r':
                 remove = true;
+                break;
+            case 'q':
+                query = bed_optarg;
                 break;
             default:
             break;
@@ -970,24 +903,10 @@ int main(int argc, char** argv) {
             create_batch_funcs(count, name);
             break;
         case eACFUNC:
-            if (function)
-            {
-                create_animation_controller_function(name);
-            }
-            else
-            {
-                create_animation_controller_internal(name);
-            }
+            create_animation_controller(name);
             break;
         case eAFUNC:
-            if (function)
-            {
-                create_animation_function(name);
-            }
-            else
-            {
-                create_animation_internal(name);
-            }
+            create_animation(name, query);
             break;
         case eNMAN:
             create_manifest();

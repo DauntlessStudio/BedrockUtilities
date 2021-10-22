@@ -26,6 +26,12 @@ bool UserData::valid_rp()
 	return resource_path.find("development_resource_packs") != string::npos;
 }
 
+bool valid_file(const string& path)
+{
+	ifstream i(path.c_str());
+	return i.good();
+}
+
 #ifdef _WIN32
 #include <filesystem>
 

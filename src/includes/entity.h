@@ -1,5 +1,6 @@
 #pragma once
 #include "core.h"
+#include <map>
 #include "file_manager.hpp"
 
 using namespace std;
@@ -24,7 +25,7 @@ namespace bedrock
 		void add_groups_to_entity(const json& groups); 
 		void remove_groups_from_entity(const json& groups);
 		void add_animation_controller(const string& anim_name, const string& query, const string& exit_query, const vector<string>& entry_line);
-		void add_animation(const string& anim_name, const float& anim_length, const float& time_entry, const bool& should_loop, const vector<string>& commands);
+		void add_animation(const string& anim_name, const string& anim_length, const map<string, vector<string>>& timeline_entries, const bool& should_loop, const string& query);
 	};
 
 }

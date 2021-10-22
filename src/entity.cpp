@@ -135,14 +135,21 @@ void entity::add_animation_controller(const string& anim_name, const string& que
         controller["states"]["effect"]["transitions"] = json::array({ json({{"default", exit_query}}) });
     }
 
-    controller["states"]["effect"]["on_entry"] = entry_line;
+    vector<string> use_entries;
+    for (string element : entry_line)
+    {
+        string val = element;
+        replace_all(val, "$", name);
+        use_entries.push_back(val);
+    }
+    controller["states"]["effect"]["on_entry"] = use_entries;
 
     animation_controller["animation_controllers"]["controller.animation." + name + "." + anim_title_name] = controller;
     write_json_to_file(animation_controller, user_data.behavior_path + "/animation_controllers/" + name + ".animation_controller.json", 2);
     return;
 }
 
-void entity::add_animation(const string& anim_name, const float& anim_length, const float& time_entry, const bool& should_loop, const vector<string>& commands)
+void entity::add_animation(const string& anim_name, const string& anim_length, const map<string, vector<string>>& timeline_entries, const bool& should_loop, const string& query)
 {
     make_directory(user_data.behavior_path + "/animation_controllers/");
     string full_name = entity_json["minecraft:entity"]["description"]["identifier"];
@@ -153,16 +160,37 @@ void entity::add_animation(const string& anim_name, const float& anim_length, co
     replace_all(anim_title_name, name + ".", "");
 
     entity_json["minecraft:entity"]["description"]["animations"].merge_patch(json({ {anim_title_name, "animation." + name + "." + anim_title_name} }));
-    entity_json["minecraft:entity"]["description"]["scripts"]["animate"].push_back(anim_title_name);
+    if (query.empty())
+    {
+        entity_json["minecraft:entity"]["description"]["scripts"]["animate"].push_back(anim_title_name);
+    }
+    else
+    {
+        json tmp;
+        tmp[anim_title_name] = query;
+        entity_json["minecraft:entity"]["description"]["scripts"]["animate"].push_back(tmp);
+    }
 
     ordered_json animation = nlohmann::ordered_json::parse(R"({"format_version": "1.10.0", "animations": {}})");
 
     read_json_from_file(animation, user_data.behavior_path + "/animations/" + name + ".json", "Creating Animation...");
 
     ordered_json anim;
-    anim["animation_length"] = anim_length;
+    anim["animation_length"] = stof(anim_length);
     anim["loop"] = should_loop;
-    anim["timeline"] = nlohmann::ordered_json({ {to_string(time_entry), commands} });
+    nlohmann::ordered_json timeline;
+    for (const auto& entry : timeline_entries)
+    {
+        vector<string> use_values;
+        for (string element : entry.second)
+        {
+            string val = element;
+            replace_all(val, "$", name);
+            use_values.push_back(val);
+        }
+        timeline[entry.first] = use_values;
+    }
+    anim["timeline"] = timeline;
 
     animation["animations"]["animation." + name + "." + anim_title_name] = anim;
     write_json_to_file(animation, user_data.behavior_path + "/animations/" + name + ".json", 2);
