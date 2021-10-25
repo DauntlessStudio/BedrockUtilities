@@ -165,6 +165,7 @@ Project Link: [https://github.com/DauntlessStudio/BedrockUtilities](https://gith
 * [JSON For Modern c++](https://github.com/nlohmann/json)
 * [Lodepng](https://github.com/lvandeve/lodepng)
 * [Img Shields](https://shields.io)
+* [UUID Generator](https://github.com/mariusbancila/stduuid)
 
 
 
