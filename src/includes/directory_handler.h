@@ -18,7 +18,9 @@ struct UserData
 
 extern struct UserData user_data;
 
+bool valid_file(const string& path);
 string get_path();
+string get_working_directory();
 void write_user_data();
 void read_user_data();
 int write_resource_dir(bool bUseSource, string arg);

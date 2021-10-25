@@ -43,3 +43,4 @@ Release
 *.filters
 *.user
 *.vcxproj
+makefile
