@@ -83,7 +83,7 @@ You can either compile the project from source, or use the installer.
    git clone https://github.com/DauntlessStudio/BedrockUtilities.git
    ```
 2. Compile  
-   Use Compiler of your choice to generate an executeable. On Linux you can use the makefile.
+   Use Compiler of your choice to generate an executeable.
 3. Set In Path  
    Windows: %USERPROFILE%/AppData/Local/BedrockUtilities/
    Linux: /usr/bin/
