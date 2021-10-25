@@ -1,6 +1,13 @@
 #include "includes/file_manager.hpp"
 #include "includes/entity.h"
 
+/// <summary>
+/// Writes a JSON object to a file.
+/// </summary>
+/// <param name="object">The JOSN object to write.</param>
+/// <param name="path">The path to find a JSON file at.</param>
+/// <param name="spacing">The indentation of the JSON file.</param>
+/// <returns>Success value.</returns>
 int write_json_to_file(const nlohmann::ordered_json& object, string path, int spacing)
 {
     //Write modified entity
@@ -23,6 +30,13 @@ int write_json_to_file(const nlohmann::ordered_json& object, string path, int sp
     return 0;
 }
 
+/// <summary>
+/// Reads a JSON object from a file.
+/// </summary>
+/// <param name="object">The new JSON object.</param>
+/// <param name="path">The path to read a JSON file from.</param>
+/// <param name="error_message">An error message to pring if reading fails.</param>
+/// <returns>Success value.</returns>
 int read_json_from_file(nlohmann::ordered_json& object, string path, string error_message)
 {
     ifstream i;
@@ -44,6 +58,13 @@ int read_json_from_file(nlohmann::ordered_json& object, string path, string erro
     return 0;
 }
 
+/// <summary>
+/// Reads a JSON object from the user's input.
+/// </summary>
+/// <param name="input_message">The message to print to the user.</param>
+/// <param name="error_message">The message to pring if the JSON is invalid.</param>
+/// <param name="abort_on_fail">Should the program exit if reading fails?</param>
+/// <returns>The new JSON from the input.</returns>
 nlohmann::ordered_json read_json_from_input(string input_message, string error_message, bool abort_on_fail)
 {
     cout << input_message << endl;
@@ -69,6 +90,12 @@ nlohmann::ordered_json read_json_from_input(string input_message, string error_m
     return jo;
 }
 
+/// <summary>
+/// Writes a string to a given path, overwriting the file if it exists already.
+/// </summary>
+/// <param name="path">The path to write to.</param>
+/// <param name="entry">The string to write.</param>
+/// <returns>Success value.</returns>
 int overwrite_txt_file(string path, string entry)
 {
     make_directory(path);
@@ -83,6 +110,12 @@ int overwrite_txt_file(string path, string entry)
     return 0;
 }
 
+/// <summary>
+/// Writes a string to a given path, appending to the file if it exists already.
+/// </summary>
+/// <param name="path">The path to write to.</param>
+/// <param name="entry">The string to append.</param>
+/// <returns>Success value.</returns>
 int append_txt_file(string path, string entry)
 {
     make_directory(path);
@@ -97,6 +130,12 @@ int append_txt_file(string path, string entry)
     return 0;
 }
 
+/// <summary>
+/// Copies a file from the source path to the destination path.
+/// </summary>
+/// <param name="SRC">The source path.</param>
+/// <param name="DEST">The destination path.</param>
+/// <returns>True if the copy succeeded.</returns>
 bool copy_file(const char* SRC, const char* DEST)
 {
     ifstream src(SRC, ios::binary);
@@ -105,6 +144,13 @@ bool copy_file(const char* SRC, const char* DEST)
     return src && dest;
 }
 
+/// <summary>
+/// Writes a png texture to a path.
+/// </summary>
+/// <param name="png">The png to write.</param>
+/// <param name="path">The destination path.</param>
+/// <param name="width">The png width.</param>
+/// <param name="height">The png height.</param>
 void write_texture_to_file(vector<unsigned char> png, string path, int width, int height)
 {
     make_directory(path);
@@ -130,6 +176,12 @@ void write_texture_to_file(vector<unsigned char> png, string path, int width, in
     cout << "Saved Texture At: " + path << endl;
 }
 
+/// <summary>
+/// Gets all behavior pack entity files from the user data bp that match the filters.
+/// </summary>
+/// <param name="name">The file names, seperated by commas.</param>
+/// <param name="family">The family type to search for.</param>
+/// <returns>A vector of entities.</returns>
 vector<bedrock::entity> get_bp_entities(string name, string family)
 {
     vector<bedrock::entity> entities;

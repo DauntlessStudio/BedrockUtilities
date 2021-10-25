@@ -2,20 +2,44 @@
 
 using namespace bedrock;
 
+/// <summary>
+/// Default constructor. Creates a new entity as an empty ordered JSON object.
+/// </summary>
 entity::entity() : entity_json(ordered_json()) {}
 
+/// <summary>
+/// Constructor. Creates a new entity from an ordered JSON object.
+/// </summary>
+/// <param name="ent">The ordered JSON object</param>
 entity::entity(ordered_json& ent) : entity_json(ent) {}
 
-entity::entity(string file) : file_path(file)
+/// <summary>
+/// Constructor. Creates a new entity from a JSON file on disk.
+/// </summary>
+/// <param name="file">The file path.</param>
+entity::entity(const string& file) : file_path(file)
 {
     read_json_from_file(entity_json, file_path, "Failed to open json at: " + file_path);
 }
 
+/// <summary>
+/// Constructor. Creates a new entity from an ordered JSON object, and initializes it's file path.
+/// </summary>
+/// <param name="ent">The ordered JSON.</param>
+/// <param name="file">The file path for the entity.</param>
 entity::entity(ordered_json& ent, string file) : entity_json(ent), file_path(file) {}
 
+/// <summary>
+/// Default destructor.
+/// </summary>
 entity::~entity() {}
 
-bool entity::does_entity_contain_family(string family)
+/// <summary>
+/// Does the entity contain the provided family type?
+/// </summary>
+/// <param name="family">The family type to search for.</param>
+/// <returns>True if the provided family type was found.</returns>
+bool entity::does_entity_contain_family(const string& family)
 {
     for (const auto& it : entity_json["minecraft:entity"]["components"]["minecraft:type_family"]["family"].items())
     {
@@ -42,6 +66,10 @@ bool entity::does_entity_contain_family(string family)
     return false;
 }
 
+/// <summary>
+/// Adds component groups to this entity.
+/// </summary>
+/// <param name="groups">The component groups to add.</param>
 void entity::add_groups_to_entity(const json& groups)
 {
     //Process resets
@@ -98,6 +126,10 @@ void entity::add_groups_to_entity(const json& groups)
     return;
 }
 
+/// <summary>
+/// Removes component groups from this entity.
+/// </summary>
+/// <param name="groups">The component groups to remove.</param>
 void entity::remove_groups_from_entity(const json& groups)
 {
     for (auto& el : groups.items())
@@ -111,6 +143,13 @@ void entity::remove_groups_from_entity(const json& groups)
     return;
 }
 
+/// <summary>
+/// Adds a new animation controller to this entity.
+/// </summary>
+/// <param name="anim_name">The animation name.</param>
+/// <param name="query">The query to advance the animation state.</param>
+/// <param name="exit_query">The query to return to the default animation state.</param>
+/// <param name="entry_line">The commands to run when the animation state is entered.</param>
 void entity::add_animation_controller(const string& anim_name, const string& query, const string& exit_query, const vector<string>& entry_line)
 {
     make_directory(user_data.behavior_path + "/animation_controllers/");
@@ -149,6 +188,14 @@ void entity::add_animation_controller(const string& anim_name, const string& que
     return;
 }
 
+/// <summary>
+/// Adds a new animation to this entity.
+/// </summary>
+/// <param name="anim_name">The animation name.</param>
+/// <param name="anim_length">The duration of the animation.</param>
+/// <param name="timeline_entries">The entries in the timetable, with the key being the time, and the value being the commands to execute.</param>
+/// <param name="should_loop">Should this animation loop?</param>
+/// <param name="query">An optional query to play this animation based on a condition.</param>
 void entity::add_animation(const string& anim_name, const string& anim_length, const map<string, vector<string>>& timeline_entries, const bool& should_loop, const string& query)
 {
     make_directory(user_data.behavior_path + "/animation_controllers/");

@@ -1,6 +1,10 @@
 #include "includes/BedrockTerminal.hpp"
 
-void show_usage(string command) {
+/// <summary>
+/// Prints help information to terminal.
+/// </summary>
+/// <param name="command">The command to print help info for. Shows command list if empty.</param>
+void show_usage(const string& command) {
     switch (mapCommandList[command])
     {
     case eRDIR:
@@ -83,6 +87,9 @@ void show_usage(string command) {
     }
 }
 
+/// <summary>
+/// Initializes the command list to get an enum value from user input.
+/// </summary>
 void init_command_list() {
     mapCommandList["rdir"] = eRDIR;
     mapCommandList["bdir"] = eBDIR;
@@ -98,7 +105,14 @@ void init_command_list() {
     mapCommandList["skin"] = eSKIN;
 }
 
-int create_component_group(string family, string name, int spacing) 
+/// <summary>
+/// Creates a new component group in the desired entity files.
+/// </summary>
+/// <param name="family">Searches by family, finding all entities with the specified family type.</param>
+/// <param name="name">Searches by file name.</param>
+/// <param name="spacing">The indentation level for the JSON file.</param>
+/// <returns>Success value.</returns>
+int create_component_group(const string& family, const string& name, const int& spacing)
 {
     if(!user_data.valid_bp()) abort_program("Invalid Behavior Path at " + user_data.behavior_path + "\nAborting...");
 
@@ -149,7 +163,14 @@ int create_component_group(string family, string name, int spacing)
     return 0;
 }
 
-int remove_component_group(string family, string name, int spacing)
+/// <summary>
+/// Removes an existing component group in the desired entity files.
+/// </summary>
+/// <param name="family">Searches by family, finding all entities with the specified family type.</param>
+/// <param name="name">Searches by file name.</param>
+/// <param name="spacing">The indentation level for the JSON file.</param>
+/// <returns>Success value.</returns>
+int remove_component_group(const string& family, const string& name, const int& spacing)
 {
     if (!user_data.valid_bp()) abort_program("Invalid Behavior Path at " + user_data.behavior_path + "\nAborting...");
 
@@ -191,7 +212,14 @@ int remove_component_group(string family, string name, int spacing)
     return 0;
 }
 
-int create_components(string family, string name, int spacing)
+/// <summary>
+/// Creates a new base component in the desired entity files.
+/// </summary>
+/// <param name="family">Searches by family, finding all entities with the specified family type.</param>
+/// <param name="name">Searches by file name.</param>
+/// <param name="spacing">The indentation level for the JSON file.</param>
+/// <returns>Success value.</returns>
+int create_components(const string& family, const string& name, const int& spacing)
 {
     if (!user_data.valid_bp()) abort_program("Invalid Behavior Path at " + user_data.behavior_path + "\nAborting...");
 
@@ -231,7 +259,14 @@ int create_components(string family, string name, int spacing)
     return 0;
 }
 
-int remove_components(string family, string name, int spacing)
+/// <summary>
+/// Creates a new component group in the desired entity files.
+/// </summary>
+/// <param name="family">Searches by family, finding all entities with the specified family type.</param>
+/// <param name="name">Searches by file name.</param>
+/// <param name="spacing">The indentation level for the JSON file.</param>
+/// <returns>Success value.</returns>
+int remove_components(const string& family, const string& name, const int& spacing)
 {
     if (!user_data.valid_bp()) abort_program("Invalid Behavior Path at " + user_data.behavior_path + "\nAborting...");
 
@@ -276,7 +311,12 @@ int remove_components(string family, string name, int spacing)
     return 0;
 }
 
-int create_new_entity(int spacing)
+/// <summary>
+/// Creates a new entity.
+/// </summary>
+/// <param name="spacing">The indentation level for the JSON file.</param>
+/// <returns>Success value.</returns>
+int create_new_entity(const int& spacing)
 {
     if (!user_data.valid_bp()) abort_program("Invalid Behavior Path at " + user_data.behavior_path + "\nAborting...");
 
@@ -354,7 +394,13 @@ int create_new_entity(int spacing)
     return 0;
 }
 
-int create_new_item(int spacing, int stack_size)
+/// <summary>
+/// Creates a new item.
+/// </summary>
+/// <param name="spacing">The indentation level for the JSON file</param>
+/// <param name="stack_size">The max count of the item.</param>
+/// <returns>Success value.</returns>
+int create_new_item(const int& spacing, const int& stack_size)
 {
     if (!user_data.valid_bp()) abort_program("Invalid Behavior Path at " + user_data.behavior_path + "\nAborting...");
 
@@ -445,7 +491,12 @@ int create_new_item(int spacing, int stack_size)
     return 0;
 }
 
-int create_new_block(int spacing)
+/// <summary>
+/// Creates a new block
+/// </summary>
+/// <param name="spacing">The indentation level for the JSON file</param>
+/// <returns>Success value.</returns>
+int create_new_block(const int& spacing)
 {
     if (!user_data.valid_bp()) abort_program("Invalid Behavior Path at " + user_data.behavior_path + "\nAborting...");
 
@@ -519,7 +570,13 @@ int create_new_block(int spacing)
     return 0;
 }
 
-int create_batch_funcs(int count, string name)
+/// <summary>
+/// Creates x number of mcfunctions.
+/// </summary>
+/// <param name="count">The number of mcfunctions to create.</param>
+/// <param name="name">The function name, appended by _#.</param>
+/// <returns>Success value.</returns>
+int create_batch_funcs(const int& count, string& name)
 {
     if (!user_data.valid_bp()) abort_program("Invalid Behavior Path at " + user_data.behavior_path + "\nAborting...");
 
@@ -538,6 +595,11 @@ int create_batch_funcs(int count, string name)
     return 0;
 }
 
+/// <summary>
+/// Creates an animation controller for the provided entities.
+/// </summary>
+/// <param name="name">The entities' file names, seperated by commas.</param>
+/// <returns>Success value.</returns>
 int create_animation_controller(string& name)
 {
     if (!user_data.valid_bp()) abort_program("Invalid Behavior Path at " + user_data.behavior_path + "\nAborting...");
@@ -590,6 +652,12 @@ int create_animation_controller(string& name)
     return 0;
 }
 
+/// <summary>
+/// Creates an animation for the provided entities.
+/// </summary>
+/// <param name="name">The entities' file names, sperated by commas.</param>
+/// <param name="query">An optional conditional query as an animation condition.</param>
+/// <returns>Success value.</returns>
 int create_animation(string& name, string& query)
 {
     if (!user_data.valid_bp()) abort_program("Invalid Behavior Path at " + user_data.behavior_path + "\nAborting...");
@@ -652,51 +720,54 @@ int create_animation(string& name, string& query)
     return 0;
 }
 
+/// <summary>
+/// Prompts the user to create any non-existant functions detected in the list of commands.
+/// </summary>
+/// <param name="commands">The list of commands to search for function calls.</param>
+/// <param name="names">The names used in place of the $ symbol.</param>
+/// <returns>Success value.</returns>
 int create_functions_from_strings(const vector<string>& commands, const vector<string>& names)
 {
     for (const auto& command : commands)
     {
+        if (command.find("function") != command.npos && !valid_file(user_data.behavior_path + "/functions/" + command.substr(10)))
+        {
+            cout << "Function: \"" + command.substr(10) + "\" Does Not Exist" << endl << "Would You Like To Create It? (y/n)";
+            cin.clear();
+            fflush(stdin);
+            string input;
+            getline(cin, input);
+            if (input != "Y" && input != "y")
+                continue;
+        }
+        else
+        {
+            continue;
+        }
+
         for (const auto& file : names)
         {
             string use_name = command;
             replace_all(use_name, "$", file);
 
-            if (use_name.find("function") != command.npos && !valid_file(user_data.behavior_path + "/functions/" + use_name.substr(10)))
-            {
-                cout << "Function: \"" + use_name.substr(10) + "\" Does Not Exist" << endl << "Would You Like To Create It? (y/n)";
-                cin.clear();
-                fflush(stdin);
-                string input;
-                getline(cin, input);
-                if (input != "Y" && input != "y")
-                    continue;
+            cout << "Function:" << endl;
+            string function = read_multiline_input();
 
-                string function;
-                cout << "Function:" << endl;
-                while (!cin.eof())
-                {
-                    string line;
-                    getline(cin, line);
+            string use_function = function;
+            replace_all(use_function, "$", file);
 
-                    if (cin.fail())
-                        break;
-                    function += line + '\n';
-                }
-
-                // Remove Trailing \n
-                function.erase(function.end() - 1);
-
-                string use_function = function;
-                replace_all(use_function, "$", file);
-
-                overwrite_txt_file(user_data.behavior_path + "/functions/" + use_name.substr(10), use_function);
-            }
+            overwrite_txt_file(user_data.behavior_path + "/functions/" + use_name.substr(10), use_function);
         }
     }
     return 0;
 }
 
-int create_skin_pack(string name)
+/// <summary>
+/// Creates a skin pack using all of the .png files in the working directory.
+/// </summary>
+/// <param name="name">The name of the skin pack.</param>
+/// <returns>Success value.</returns>
+int create_skin_pack(const string& name)
 {
     // Create skins.json
     vector<string> files = get_directory_files(get_working_directory() + "/", ".png");
@@ -753,6 +824,10 @@ int create_skin_pack(string name)
     return 0;
 }
 
+/// <summary>
+/// Creates a new behavior and resource pack in the same folder as the current user bp and rp.
+/// </summary>
+/// <returns>Success value.</returns>
 int create_manifest()
 {
     if (!user_data.valid_bp()) abort_program("Invalid Behavior Path at " + user_data.behavior_path + "\nAborting...");
@@ -797,12 +872,19 @@ int create_manifest()
     return 0;
 }
 
-int abort_program(string message)
+/// <summary>
+/// Aborts program printing message to the terminal.
+/// </summary>
+/// <param name="message">The message to print to the terminal.</param>
+void abort_program(const string& message)
 {
     cout << message << endl;
     exit(-1);
 }
 
+/// <summary>
+/// Main, execution starts here.
+/// </summary>
 int main(int argc, char** argv) {
     prog_name = argv[0];
 

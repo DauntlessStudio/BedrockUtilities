@@ -2,6 +2,9 @@
 
 struct UserData user_data;
 
+/// <summary>
+/// Writes the user data struct to the directory.dat.
+/// </summary>
 void write_user_data()
 {
 	std::ofstream fout(get_path());
@@ -9,6 +12,9 @@ void write_user_data()
 	fout.close();
 }
 
+/// <summary>
+/// Reades the directory.dat file into the user data struct.
+/// </summary>
 void read_user_data()
 {
 	std::ifstream fin(get_path());
@@ -16,16 +22,29 @@ void read_user_data()
 	fin.close();
 }
 
+/// <summary>
+/// Checks if the development behavior pack is valid.
+/// </summary>
+/// <returns>True if the bp is valid.</returns>
 bool UserData::valid_bp()
 {
 	return behavior_path.find("development_behavior_packs") != string::npos;
 }
 
+/// <summary>
+/// Checks if the development resource pack is valid.
+/// </summary>
+/// <returns>True if the rp is valid.</returns>
 bool UserData::valid_rp()
 {
 	return resource_path.find("development_resource_packs") != string::npos;
 }
 
+/// <summary>
+/// Checks if a given file exists.
+/// </summary>
+/// <param name="path">The path of the file.</param>
+/// <returns>True if the file exists.</returns>
 bool valid_file(const string& path)
 {
 	ifstream i(path.c_str());
@@ -35,6 +54,10 @@ bool valid_file(const string& path)
 #ifdef _WIN32
 #include <filesystem>
 
+/// <summary>
+/// Gets the Windows path of the directory.dat path.
+/// </summary>
+/// <returns>The path to directory.dat.</returns>
 string get_path()
 {
 	const char* userpath = getenv("USERPROFILE");
@@ -46,11 +69,21 @@ string get_path()
 	return path;
 }
 
+/// <summary>
+/// Gets the working directory of the terminal.
+/// </summary>
+/// <returns>The string path of the working directory.</returns>
 string get_working_directory()
 {
 	return std::filesystem::current_path().string();
 }
 
+/// <summary>
+/// Writes a new resource development pack path to directory.dat.
+/// </summary>
+/// <param name="bUseSource">Should the working directory be used?</param>
+/// <param name="arg">The path to the new rp.</param>
+/// <returns>Success value.</returns>
 int write_resource_dir(bool bUseSource, string arg)
 {
 	cout << "Write Path" << endl;
@@ -75,6 +108,12 @@ int write_resource_dir(bool bUseSource, string arg)
 	return 1;
 }
 
+/// <summary>
+/// Writes a new behavior development pack path to directory.dat.
+/// </summary>
+/// <param name="bUseSource">Should the working directory be used?</param>
+/// <param name="arg">The path to the new bp.</param>
+/// <returns>Success value.</returns>
 int write_behavior_dir(bool bUseSource, string arg)
 {
 	std::string path;
@@ -98,6 +137,12 @@ int write_behavior_dir(bool bUseSource, string arg)
 	return 1;
 }
 
+/// <summary>
+/// Gets all files recursively in the given path.
+/// </summary>
+/// <param name="path">The path to check files for.</param>
+/// <param name="filter">A filter that files must contain, such as (.png).</param>
+/// <returns>A string vector of file paths.</returns>
 vector<string> get_directory_files(const string path, const string filter)
 {
 	vector<string> files;
@@ -112,6 +157,11 @@ vector<string> get_directory_files(const string path, const string filter)
 	return files;
 }
 
+/// <summary>
+/// Makes a new directory at given path.
+/// </summary>
+/// <param name="path">The path to create a directory at.</param>
+/// <returns>Success value.</returns>
 int make_directory(const string path)
 {
 	size_t index = path.find_last_of('/');
