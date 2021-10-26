@@ -756,7 +756,7 @@ int create_functions_from_strings(const vector<string>& commands, const vector<s
             string use_function = function;
             replace_all(use_function, "$", file);
 
-            overwrite_txt_file(user_data.behavior_path + "/functions/" + use_name.substr(10), use_function);
+            overwrite_txt_file(user_data.behavior_path + "/functions/" + use_name.substr(10) + ".mcfunction", use_function);
         }
     }
     return 0;
