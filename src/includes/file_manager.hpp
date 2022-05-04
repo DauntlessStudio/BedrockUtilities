@@ -19,4 +19,4 @@ int overwrite_txt_file(string path, string entry);
 int append_txt_file(string path, string entry);
 bool copy_file(const char* SRC, const char* DEST);
 void write_texture_to_file(vector<unsigned char> png, string path, int width = 16, int height = 16);
-vector<bedrock::entity> get_bp_entities(string name, string family);
+vector<bedrock::entity> get_bp_entities(string name, string family, string dir_name = "");

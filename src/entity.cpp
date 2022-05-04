@@ -2,6 +2,14 @@
 
 using namespace bedrock;
 
+
+const string& bedrock::entity::identifier()
+{
+    string name = entity_json["minecraft:entity"]["description"]["identifier"];
+    name.replace(name.begin(), name.end(), "minecraft:");
+    return name;
+}
+
 /// <summary>
 /// Default constructor. Creates a new entity as an empty ordered JSON object.
 /// </summary>
@@ -113,8 +121,8 @@ void entity::add_groups_to_entity(const json& groups)
             events[el.key() + "_reset"]["add"]["component_groups"] = val_reset;
         }
 
-        events[el.key()]["add"]["component_groups"] = val;
-        events[el.key() + "_reset"]["remove"]["component_groups"] = val;
+        events["add_" + el.key()]["add"]["component_groups"] = val;
+        events["remove_" + el.key()]["remove"]["component_groups"] = val;
     }
 
     //Merge events
@@ -139,6 +147,53 @@ void entity::remove_groups_from_entity(const json& groups)
         entity_json["minecraft:entity"]["events"].erase(el.key());
         entity_json["minecraft:entity"]["events"].erase(el.key() + "_reset");
     }
+
+    return;
+}
+
+/// <summary>
+/// Add a value to the damage sensor array.
+/// </summary>
+/// <param name="sensor">The sensor to add</param>
+/// <param name="use_groups">Should iterate through component groups</param>
+void entity::add_to_damage_sensor(const json& sensor, const bool& use_groups)
+{
+    json tmp_sensor = json::array({ sensor });
+
+    if (use_groups)
+    {
+        for (const auto& it : entity_json["minecraft:entity"]["component_groups"].items())
+        {
+            if (it.value().contains("minecraft:damage_sensor"))
+            {
+                json local_tmp_sensor = tmp_sensor;
+                json triggers = entity_json["minecraft:entity"]["components"]["minecraft:damage_sensor"]["triggers"];
+                if (triggers.is_array())
+                {
+                    local_tmp_sensor.insert(local_tmp_sensor.end(), triggers.begin(), triggers.end());
+                }
+                else if (!triggers.is_null())
+                {
+                    local_tmp_sensor.push_back(triggers);
+                }
+                it.value()["minecraft:damage_sensor"]["triggers"].merge_patch(local_tmp_sensor);
+            }
+        }
+    }
+
+    json triggers = entity_json["minecraft:entity"]["components"]["minecraft:damage_sensor"]["triggers"];
+    if (triggers.is_array())
+    {
+        tmp_sensor.insert(tmp_sensor.end(), triggers.begin(), triggers.end());
+    }
+    else if (!triggers.is_null())
+    {
+        tmp_sensor.push_back(triggers);
+    }
+    entity_json["minecraft:entity"]["components"]["minecraft:damage_sensor"]["triggers"].merge_patch(tmp_sensor);
+
+    string name = entity_json["minecraft:entity"]["description"]["identifier"];
+    cout << name + ":\n" << "Adding Damage Sensor:\n" << LINE_GREEN << sensor.dump(2) << endl;
 
     return;
 }

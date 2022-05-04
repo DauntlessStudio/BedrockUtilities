@@ -182,7 +182,7 @@ void write_texture_to_file(vector<unsigned char> png, string path, int width, in
 /// <param name="name">The file names, seperated by commas.</param>
 /// <param name="family">The family type to search for.</param>
 /// <returns>A vector of entities.</returns>
-vector<bedrock::entity> get_bp_entities(string name, string family)
+vector<bedrock::entity> get_bp_entities(string name, string family, string dir_name)
 {
     vector<bedrock::entity> entities;
     if (!name.empty())
@@ -196,7 +196,7 @@ vector<bedrock::entity> get_bp_entities(string name, string family)
     }
     else
     {
-        vector<string> files = get_directory_files(user_data.behavior_path + "/entities/", ".json");
+        vector<string> files = get_directory_files(user_data.behavior_path + "/entities/" + dir_name, ".json");
         for (const auto& file : files)
         {
             bedrock::entity entity(file);

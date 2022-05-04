@@ -10,24 +10,25 @@ void show_usage(const string& command) {
     case eRDIR:
         cout << prog_name << " [<options>] rdir" << endl;
         cout << "options:\n  [-d <path>] Directory, sets the resource directory to <path>. Defaults to current working directory" << endl;
-        cout << "  [-i <indent>] Indent, sets the output file's indent level. Defaults to 2" << endl;
+        cout << "  [-i <indent>] Indent, sets the output file's indent level. Defaults to 4" << endl;
         break;
     case eBDIR:
         cout << prog_name << " [<options>] bdir" << endl;
         cout << "options:\n  [-d <path>] Directory, sets the behavior directory to <path>. Defaults to current working directory" << endl;
-        cout << "  [-i <indent>] Indent, sets the output file's indent level. Defaults to 2" << endl;
+        cout << "  [-i <indent>] Indent, sets the output file's indent level. Defaults to 4" << endl;
         break;
     case eCOGR:
         cout << prog_name << " [<options>] cogr" << endl;
-        cout << "options:\n  [-i <indent>] Indent, sets the output file's indent level. Defaults to 2" << endl;
+        cout << "options:\n  [-i <indent>] Indent, sets the output file's indent level. Defaults to 4" << endl;
         cout << "  [-r] Remove, removes the component groups" << endl;
         cout << "  [-n <filename>,<filename2>] Name, uses bp/entities/<filename>.json as the file to modify" << endl;
         cout << "  [-f <family>] Family, modifies all entities in bp/entities/ with the desired family type" << endl;
+        cout << "  [-d <directory>] Specifies a a subdirectory of bp/entities/" << endl;
         cout << "  Modifies all entites in bp/entities/ if [-n|-f] are not provided" << endl;
         break;
     case eCOMP:
         cout << prog_name << " [<options>] comp" << endl;
-        cout << "options:\n  [-i <indent>] Indent, sets the output file's indent level. Defaults to 2" << endl;
+        cout << "options:\n  [-i <indent>] Indent, sets the output file's indent level. Defaults to 4" << endl;
         cout << "  [-r] Remove, removes the component groups" << endl;
         cout << "  [-n <filename>,<filename2>] Name, uses bp/entities/<filename>.json as the file to modify" << endl;
         cout << "  [-f <family>] Family, modifies all entities in bp/entities/ with the desired family type" << endl;
@@ -35,11 +36,11 @@ void show_usage(const string& command) {
         break;
     case eNENT:
         cout << prog_name << " [<options>] nent" << endl;
-        cout << "options:\n  [-i <indent>] Indent, sets the output file's indent level. Defaults to 2" << endl;
+        cout << "options:\n  [-i <indent>] Indent, sets the output file's indent level. Defaults to 4" << endl;
         break;
     case eNITM:
         cout << prog_name << " [<options>] nitm" << endl;
-        cout << "options:\n  [-i <indent>] Indent, sets the output file's indent level. Defaults to 2" << endl;
+        cout << "options:\n  [-i <indent>] Indent, sets the output file's indent level. Defaults to 4" << endl;
         break;
     case eNMAN:
         cout << prog_name << " nman" << endl;
@@ -47,7 +48,7 @@ void show_usage(const string& command) {
         break;
     case eNBLK:
         cout << prog_name << " [<options>] nblk" << endl;
-        cout << "options:\n  [-i <indent>] Indent, sets the output file's indent level. Defaults to 2" << endl;
+        cout << "options:\n  [-i <indent>] Indent, sets the output file's indent level. Defaults to 4" << endl;
         break;
     case eFUNC:
         cout << prog_name << " [<options>] func" << endl;
@@ -56,16 +57,39 @@ void show_usage(const string& command) {
         break;
     case eAFUNC:
         cout << prog_name << " [<options>] afunc" << endl;
-        cout << "options:\n  [-n <name>,<name2>] Name, the name of the entity to create the animation controller for. Defaults to 'player'" << endl;
+        cout << "options:\n  [-i <indent>] Indent, sets the output file's indent level. Defaults to 4" << endl;
+        cout << "  [-n <filename>,<filename2>] Name, uses bp/entities/<filename>.json as the file to modify" << endl;
+        cout << "  [-f <family>] Family, modifies all entities in bp/entities/ with the desired family type" << endl;
+        cout << "  [-d <directory>] Specifies a a subdirectory of bp/entities/" << endl;
         cout << "  [-q <query>] Query, uses the provided query in the entities animation" << endl;
         break;
     case eACFUNC:
         cout << prog_name << " [<options>] acfunc" << endl;
-        cout << "options:\n  [-n <name>,<name2>] Name, the name of the entity to create the animation for. Defaults to 'player'" << endl;
+        cout << "options:\n  [-i <indent>] Indent, sets the output file's indent level. Defaults to 4" << endl;
+        cout << "  [-n <filename>,<filename2>] Name, uses bp/entities/<filename>.json as the file to modify" << endl;
+        cout << "  [-f <family>] Family, modifies all entities in bp/entities/ with the desired family type" << endl;
+        cout << "  [-d <directory>] Specifies a a subdirectory of bp/entities/" << endl;
         break;
     case eSKIN:
         cout << prog_name << " [<options>] skin" << endl;
         cout << "options:\n  [-n <name>] Name, the name of the skin pack, in camel case'" << endl;
+        break;
+    case eDMGS:
+        cout << prog_name << " [<options>] dmgs" << endl;
+        cout << "options:\n  [-i <indent>] Indent, sets the output file's indent level. Defaults to 4" << endl;
+        cout << "  [-n <filename>,<filename2>] Name, uses bp/entities/<filename>.json as the file to modify" << endl;
+        cout << "  [-f <family>] Family, modifies all entities in bp/entities/ with the desired family type" << endl;
+        cout << "  [-d <directory>] Specifies a a subdirectory of bp/entities/" << endl;
+        cout << "  [-g] Groups, should modify the damage sensors listed in component groups" << endl;
+        cout << "  Modifies all entites in bp/entities/ if [-n|-f] are not provided" << endl;
+        break;
+    case eTEMP:
+        cout << prog_name << " [<options>] temp" << endl;
+        cout << "options:\n  [-i <indent>] Indent, sets the output file's indent level. Defaults to 4" << endl;
+        cout << "  [-n <filename>,<filename2>] Name, uses bp/entities/<filename>.json as the file to modify" << endl;
+        cout << "  [-f <family>] Family, modifies all entities in bp/entities/ with the desired family type" << endl;
+        cout << "  [-d <directory>] Specifies a a subdirectory of bp/entities/" << endl;
+        cout << "  Modifies all entites in bp/entities/ if [-n|-f|-d] are not provided" << endl;
         break;
     default:
         cout << "usage: " << prog_name << " [<args>] <command>" << endl;
@@ -82,6 +106,8 @@ void show_usage(const string& command) {
         cout << "  afunc         Create new animation function" << endl;
         cout << "  acfunc        Create new animation controller function" << endl;
         cout << "  skin          Create new skin pack with the files in the working directory" << endl;
+        cout << "  dmgs          Add value to damage sensor components" << endl;
+        cout << "  temp          Temporary easy changes" << endl;
         cout << endl << "'" << prog_name << " -h <command>' for more information" << endl;
         break;
     }
@@ -103,62 +129,25 @@ void init_command_list() {
     mapCommandList["afunc"] = eAFUNC;
     mapCommandList["acfunc"] = eACFUNC;
     mapCommandList["skin"] = eSKIN;
+    mapCommandList["dmgs"] = eDMGS;
+    mapCommandList["temp"] = eTEMP;
 }
 
 /// <summary>
 /// Creates a new component group in the desired entity files.
 /// </summary>
-/// <param name="family">Searches by family, finding all entities with the specified family type.</param>
-/// <param name="name">Searches by file name.</param>
-/// <param name="spacing">The indentation level for the JSON file.</param>
 /// <returns>Success value.</returns>
-int create_component_group(const string& family, const string& name, const int& spacing)
+int create_component_group()
 {
-    if(!user_data.valid_bp()) abort_program("Invalid Behavior Path at " + user_data.behavior_path + "\nAborting...");
-
     string input;
-    vector<bedrock::entity> entities = get_bp_entities(name, family);
-    
-    if(entities.size() <= 0) {
-        cout << "No valid entities found\nAborting..." << endl;
-        return -1;
-    }
-
-    cout << "Found " << entities.size() << " entities" << endl;
-
     ordered_json groups = read_json_from_input("New Component Groups:", "Invalid Json\nAborting...", true);
-    for (auto& el : groups.items())
-    {
-        std::cout << "Create Reset For: " << el.key() << "? [y/n]:" << endl;
-        getline(cin, input);
-        if (input != "y" && input != "Y")
-        {
-            continue;
-        }
-
-        groups[el.key() + "_reset"] = el.value();
-    }
 
     for (auto& entity : entities)
     {
         entity.add_groups_to_entity(groups);
     }
 
-    //Confirm input and write file
-    cout << "Save File(s)? [y/n]" << endl;
-    getline(cin, input);
-    cout << input << endl;
-    if (input == "y" || input == "Y")
-    {
-        for (auto& entity : entities)
-        {
-            write_json_to_file(entity.entity_json, entity.file_path, spacing);
-        }
-    }
-    else
-    {
-        cout << "Cancelled" << endl;
-    }
+    write_entities_to_files();
 
     return 0;
 }
@@ -166,25 +155,10 @@ int create_component_group(const string& family, const string& name, const int& 
 /// <summary>
 /// Removes an existing component group in the desired entity files.
 /// </summary>
-/// <param name="family">Searches by family, finding all entities with the specified family type.</param>
-/// <param name="name">Searches by file name.</param>
-/// <param name="spacing">The indentation level for the JSON file.</param>
 /// <returns>Success value.</returns>
-int remove_component_group(const string& family, const string& name, const int& spacing)
+int remove_component_group()
 {
-    if (!user_data.valid_bp()) abort_program("Invalid Behavior Path at " + user_data.behavior_path + "\nAborting...");
-
     string input;
-    vector<bedrock::entity> entities = get_bp_entities(name, family);
-
-    if (entities.size() <= 0)
-    {
-        cout << "No valid entities found\nAborting..." << endl;
-        return -1;
-    }
-
-    cout << "Found " << entities.size() << " entities" << endl;
-
     ordered_json groups = read_json_from_input("Component Groups to Remove:", "Invalid Json\nAborting...", true);
 
     cout << "Removing Groups" << endl;
@@ -194,20 +168,7 @@ int remove_component_group(const string& family, const string& name, const int& 
         entity.remove_groups_from_entity(groups);
     }
 
-    //Confirm input and write file
-    cout << "Save File(s)? [y/n]";
-    getline(cin, input);
-    if (input == "y" || input == "Y")
-    {
-        for (auto& entity : entities)
-        {
-            write_json_to_file(entity.entity_json, entity.file_path, spacing);
-        }
-    }
-    else
-    {
-        cout << "Cancelled" << endl;
-    }
+    write_entities_to_files();
 
     return 0;
 }
@@ -215,25 +176,10 @@ int remove_component_group(const string& family, const string& name, const int& 
 /// <summary>
 /// Creates a new base component in the desired entity files.
 /// </summary>
-/// <param name="family">Searches by family, finding all entities with the specified family type.</param>
-/// <param name="name">Searches by file name.</param>
-/// <param name="spacing">The indentation level for the JSON file.</param>
 /// <returns>Success value.</returns>
-int create_components(const string& family, const string& name, const int& spacing)
+int create_components()
 {
-    if (!user_data.valid_bp()) abort_program("Invalid Behavior Path at " + user_data.behavior_path + "\nAborting...");
-
     string input;
-    vector<bedrock::entity> entities = get_bp_entities(name, family);
-
-    if (entities.size() <= 0)
-    {
-        cout << "No valid entities found\nAborting..." << endl;
-        return -1;
-    }
-
-    cout << "Found " << entities.size() << " entities" << endl;
-
     ordered_json components = read_json_from_input("New Components", "Invalid Json\nAborting...", true);
 
     for (auto& entity : entities)
@@ -241,20 +187,7 @@ int create_components(const string& family, const string& name, const int& spaci
         entity.entity_json["minecraft:entity"]["components"].merge_patch(components);
     }
 
-    //Confirm input and write file
-    cout << "Save File(s)? [y/n]";
-    getline(cin, input);
-    if (input == "y" || input == "Y")
-    {
-        for (auto& entity : entities)
-        {
-            write_json_to_file(entity.entity_json, entity.file_path, spacing);
-        }
-    }
-    else
-    {
-        cout << "Cancelled" << endl;
-    }
+    write_entities_to_files();
 
     return 0;
 }
@@ -262,25 +195,10 @@ int create_components(const string& family, const string& name, const int& spaci
 /// <summary>
 /// Creates a new component group in the desired entity files.
 /// </summary>
-/// <param name="family">Searches by family, finding all entities with the specified family type.</param>
-/// <param name="name">Searches by file name.</param>
-/// <param name="spacing">The indentation level for the JSON file.</param>
 /// <returns>Success value.</returns>
-int remove_components(const string& family, const string& name, const int& spacing)
+int remove_components()
 {
-    if (!user_data.valid_bp()) abort_program("Invalid Behavior Path at " + user_data.behavior_path + "\nAborting...");
-
     string input;
-    vector<bedrock::entity> entities = get_bp_entities(name, family);
-
-    if (entities.size() <= 0)
-    {
-        cout << "No valid entities found\nAborting..." << endl;
-        return -1;
-    }
-
-    cout << "Found " << entities.size() << " entities" << endl;
-
     ordered_json components = read_json_from_input("Components to Remove", "Invalid Json\nAborting...", true);
 
     cout << "Removing Components" << endl;
@@ -293,20 +211,7 @@ int remove_components(const string& family, const string& name, const int& spaci
         }
     }
 
-    //Confirm input and write file
-    cout << "Save File(s)? [y/n]";
-    getline(cin, input);
-    if (input == "y" || input == "Y")
-    {
-        for (auto& entity : entities)
-        {
-            write_json_to_file(entity.entity_json, entity.file_path, spacing);
-        }
-    }
-    else
-    {
-        cout << "Cancelled" << endl;
-    }
+    write_entities_to_files();
 
     return 0;
 }
@@ -598,14 +503,9 @@ int create_batch_funcs(const int& count, string& name)
 /// <summary>
 /// Creates an animation controller for the provided entities.
 /// </summary>
-/// <param name="name">The entities' file names, seperated by commas.</param>
 /// <returns>Success value.</returns>
-int create_animation_controller(string& name)
+int create_animation_controller()
 {
-    if (!user_data.valid_bp()) abort_program("Invalid Behavior Path at " + user_data.behavior_path + "\nAborting...");
-
-    if (name.empty()) name = "player";
-
     string func_name;
 
     cout << "Controller Name:" << endl;
@@ -635,19 +535,17 @@ int create_animation_controller(string& name)
         commands.push_back(line);
     }
 
-    vector<string> names = get_substrings(name, ',');
-    for (const auto& file : names)
+    for (auto& entity : entities)
     {
         string tmp_func_name = func_name;
         string tmp_func = function;
 
-        bedrock::entity entity(user_data.behavior_path + "/entities/" + file + ".json");
-
         entity.add_animation_controller(tmp_func_name, query, exit_query, commands);
-        write_json_to_file(entity.entity_json, user_data.behavior_path + "/entities/" + file + ".json", 2);
     }
 
-    create_functions_from_strings(commands, names);
+    write_entities_to_files();
+
+    create_functions_from_strings(commands);
 
     return 0;
 }
@@ -655,14 +553,11 @@ int create_animation_controller(string& name)
 /// <summary>
 /// Creates an animation for the provided entities.
 /// </summary>
-/// <param name="name">The entities' file names, sperated by commas.</param>
 /// <param name="query">An optional conditional query as an animation condition.</param>
 /// <returns>Success value.</returns>
-int create_animation(string& name, string& query)
+int create_animation(string& query)
 {
     if (!user_data.valid_bp()) abort_program("Invalid Behavior Path at " + user_data.behavior_path + "\nAborting...");
-
-    if (name.empty()) name = "player";
 
     string func_name;
 
@@ -700,23 +595,23 @@ int create_animation(string& name, string& query)
         timeline_entries.insert({time, commands});
     }
 
-    vector<string> names = get_substrings(name, ',');
-    for (const auto& file : names)
+    for (auto& entity : entities)
     {
-        bedrock::entity entity(user_data.behavior_path + "/entities/" + file + ".json");
-
         entity.add_animation(func_name, anim_length, timeline_entries, should_loop, query);
-        write_json_to_file(entity.entity_json, user_data.behavior_path + "/entities/" + file + ".json", 2);
     }
 
-    // Create functions if needed
+    write_entities_to_files();
+
     if (!contains_function)
+    {
         return 0;
+    }
 
     for (const auto& entry : timeline_entries)
     {
-        create_functions_from_strings(entry.second, names);
+        create_functions_from_strings(entry.second);
     }
+
     return 0;
 }
 
@@ -724,9 +619,8 @@ int create_animation(string& name, string& query)
 /// Prompts the user to create any non-existant functions detected in the list of commands.
 /// </summary>
 /// <param name="commands">The list of commands to search for function calls.</param>
-/// <param name="names">The names used in place of the $ symbol.</param>
 /// <returns>Success value.</returns>
-int create_functions_from_strings(const vector<string>& commands, const vector<string>& names)
+int create_functions_from_strings(const vector<string>& commands)
 {
     for (const auto& command : commands)
     {
@@ -745,16 +639,16 @@ int create_functions_from_strings(const vector<string>& commands, const vector<s
             continue;
         }
 
-        for (const auto& file : names)
+        for (auto& entity : entities)
         {
             string use_name = command;
-            replace_all(use_name, "$", file);
+            replace_all(use_name, "$", entity.identifier());
 
             cout << "Function:" << endl;
             string function = read_multiline_input();
 
             string use_function = function;
-            replace_all(use_function, "$", file);
+            replace_all(use_function, "$", entity.identifier());
 
             overwrite_txt_file(user_data.behavior_path + "/functions/" + use_name.substr(10) + ".mcfunction", use_function);
         }
@@ -773,19 +667,39 @@ int create_skin_pack(const string& name)
     vector<string> files = get_directory_files(get_working_directory() + "/", ".png");
     vector<string> loc_names;
     vector<ordered_json> skin_vect;
+    vector<string> cape_names;
     for (const auto& file : files)
     {
+        if (file.find("cape") != file.npos || file.find("Cape") != file.npos)
+        {
+            cape_names.push_back(file.substr(file.find_last_of('/') + 1, file.length()));
+            continue;
+        }
+
         string file_name = file.substr(file.find_last_of('/') + 1, file.length());
-        replace_all(file_name, ".png", "");
-        loc_names.push_back(file_name);
+        string loc_name = file_name.substr(0, file_name.find_last_of('_'));
+        loc_names.push_back(loc_name);
 
         ordered_json skin;
-        skin["localization_name"] = file_name;
+        skin["localization_name"] = loc_name;
         skin["geometry"] = file.find("Slim") != file.npos || file.find("slim") != file.npos ? "geometry.humanoid.customSlim" : "geometry.humanoid.custom";
-        skin["texture"] = file_name + ".png";
+        skin["texture"] = file_name;
         skin["type"] = "paid";
 
         skin_vect.push_back(skin);
+    }
+
+    for (const auto& cape : cape_names)
+    {
+        string cape_name = cape.substr(0, cape.find_last_of('_'));
+
+        for (auto& skin : skin_vect)
+        {
+            if (skin["localization_name"] == cape_name)
+            {
+                skin["cape"] = cape;
+            }
+        }
     }
 
     ordered_json skins;
@@ -805,20 +719,20 @@ int create_skin_pack(const string& name)
     overwrite_txt_file(get_working_directory() + "/texts/languages.json", "[\n\"en_US\"\n]");
 
     // Create en_US.lang
-    string lang = "skinpack." + name + "=" + space_camel_case(name) + "\n";
+    string lang = "skinpack." + name + "=" + space_camel_case(name) + "\n" + "pack.name" + "=" + space_camel_case(name) + "\n";
     string prev_name;
     for (const auto& skin_name : loc_names)
     {
-        string format_name = skin_name.substr(0, skin_name.find_first_of('_'));
-        format_name[0] -= 32;
+        string formatted_name = format_name(skin_name);
+        //format_name[0] -= 32;
 
-        if (prev_name != format_name)
+        if (prev_name != formatted_name)
         {
             lang += "\n";
-            prev_name = format_name;
+            prev_name = formatted_name;
         }
 
-        lang += "skin." + name + "." + skin_name + "=" + format_name + "\n";
+        lang += "skin." + name + "." + skin_name + "=" + formatted_name + "\n";
     }
     overwrite_txt_file(get_working_directory() + "/texts/en_US.lang", lang);
     return 0;
@@ -873,6 +787,88 @@ int create_manifest()
 }
 
 /// <summary>
+/// Modifies the damage sensors for the entities.
+/// </summary>
+/// <param name="include_groups">Should modify damage sensors in component groups as well</param>
+/// <returns></returns>
+int add_to_damage_sensors(const bool& include_groups)
+{
+    ordered_json sensor = read_json_from_input("New Damage Sensors:", "Invalid Json\nAborting...", true);
+
+    for (auto& entity : entities)
+    {
+        entity.add_to_damage_sensor(sensor, include_groups);
+    }
+
+    write_entities_to_files();
+
+    return 0;
+}
+
+/// <summary>
+/// Can be easily altered to make needed changes.
+/// </summary>
+/// <returns></returns>
+int temp_mod()
+{
+    for (auto& entity : entities)
+    {
+        entity.entity_json["minecraft:entity"]["description"]["animations"].merge_patch(json({ {"heart_type_6_tagged", "animation.mob.heart_type_6"} }));
+        json tmp;
+        tmp["heart_type_6_tagged"] = "query.out_of_control";
+        entity.entity_json["minecraft:entity"]["description"]["scripts"]["animate"].push_back(tmp);
+    }
+
+    write_entities_to_files();
+
+    return 0;
+}
+
+/// <summary>
+/// Gets a list of entities from provided data.
+/// </summary>
+/// <param name="family">Families to search for entities</param>
+/// <param name="name">File name ending in .json</param>
+/// <param name="dir_name">A directory to apply changes to</param>
+void get_entities(const string& family, const string& name, const string& dir_name)
+{
+    if (!user_data.valid_bp()) abort_program("Invalid Behavior Path at " + user_data.behavior_path + "\nAborting...");
+
+    string input;
+    vector<bedrock::entity> entities = get_bp_entities(name, family, dir_name);
+
+    if (entities.size() <= 0)
+    {
+        abort_program("No valid entities found\nAborting...");
+    }
+
+    cout << "Found " << entities.size() << " entities" << endl;
+}
+
+/// <summary>
+/// Write the modified list of entities.
+/// </summary>
+void write_entities_to_files()
+{
+    //Confirm input and write file
+    string input;
+    cout << "Save File(s)? [y/n]" << endl;
+    getline(cin, input);
+    cout << input << endl;
+    if (input == "y" || input == "Y")
+    {
+        for (auto& entity : entities)
+        {
+            write_json_to_file(entity.entity_json, entity.file_path, indent);
+        }
+    }
+    else
+    {
+        cout << "Cancelled" << endl;
+    }
+}
+
+/// <summary>
 /// Aborts program printing message to the terminal.
 /// </summary>
 /// <param name="message">The message to print to the terminal.</param>
@@ -901,10 +897,10 @@ int main(int argc, char** argv) {
     bool bUseSource = true;
     bool show_help = false;
     bool remove = false;
-    int indent = 2;
+    bool groups = false;
     int count = 64;
 
-    while ((opt = bed_getopt(argc, argv, "q:i:d:f:n:c:rh")) != -1) {
+    while ((opt = bed_getopt(argc, argv, "q:i:d:f:n:c:rhg")) != -1) {
         switch (opt) {
             case 'd':
                 bUseSource = false;
@@ -927,6 +923,9 @@ int main(int argc, char** argv) {
                 break;
             case 'r':
                 remove = true;
+                break;
+            case 'g':
+                groups = true;
                 break;
             case 'q':
                 query = bed_optarg;
@@ -955,21 +954,25 @@ int main(int argc, char** argv) {
         case eCOGR:
             if (remove)
             {
-                remove_component_group(family, name, indent);
+                get_entities(family, name, dirArg);
+                remove_component_group();
             }
             else
             {
-                create_component_group(family, name, indent);
+                get_entities(family, name, dirArg);
+                create_component_group();
             }
             break;
         case eCOMP:
             if (remove)
             {
-                remove_components(family, name, indent);
+                get_entities(family, name, dirArg);
+                remove_components();
             }
             else
             {
-                create_components(family, name, indent);
+                get_entities(family, name, dirArg);
+                create_components();
             }
             break;
         case eNENT:
@@ -985,16 +988,26 @@ int main(int argc, char** argv) {
             create_batch_funcs(count, name);
             break;
         case eACFUNC:
-            create_animation_controller(name);
+            get_entities(family, name, dirArg);
+            create_animation_controller();
             break;
         case eAFUNC:
-            create_animation(name, query);
+            get_entities(family, name, dirArg);
+            create_animation(query);
             break;
         case eNMAN:
             create_manifest();
             break;
         case eSKIN:
             create_skin_pack(name);
+            break;
+        case eDMGS:
+            get_entities(family, name, dirArg);
+            add_to_damage_sensors(groups);
+            break;
+        case eTEMP:
+            get_entities(family, name, dirArg);
+            temp_mod();
             break;
         default:
             show_usage("help");
